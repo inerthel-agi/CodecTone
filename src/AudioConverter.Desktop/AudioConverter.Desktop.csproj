@@ -14,7 +14,7 @@
     <ApplicationIcon>..\..\assets\audio-converter.ico</ApplicationIcon>
     <AssemblyName>CodecTone</AssemblyName>
     <RootNamespace>AudioConverter.Desktop</RootNamespace>
-    <Version>1.2.0</Version>
+    <Version>1.2.1</Version>
     <Product>CodecTone</Product>
     <Company>Stealthy Labs</Company>
   </PropertyGroup>

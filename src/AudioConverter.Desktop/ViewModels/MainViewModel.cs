@@ -201,7 +201,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     public string ArtworkTabState => IsArtworkPage ? "Active" : "Inactive";
     public string AboutTabState => IsAboutPage ? "Active" : "Inactive";
     public string RemixTabState => IsRemixPage ? "Active" : "Inactive";
-    public string ProductVersion => typeof(MainViewModel).Assembly.GetName().Version?.ToString(3) ?? "1.2.0";
+    public string ProductVersion => typeof(MainViewModel).Assembly.GetName().Version?.ToString(3) ?? "1.2.1";
     public bool IsBusy { get => isBusy; private set { if (Set(ref isBusy, value)) { Raise(nameof(IsWorkspaceEnabled)); RaiseCommands(); } } }
     public bool IsWorkspaceEnabled => !IsBusy && !closing;
     public bool FfmpegMissing { get => ffmpegMissing; private set => Set(ref ffmpegMissing, value); }

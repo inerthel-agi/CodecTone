@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.1 - 2026-09-28
+
+### Fixed
+
+- The About window's VIEW ON GITHUB button now opens github.com/inerthel-agi.
+- README repository and clone links now point to github.com/inerthel-agi/CodecTone.
+
 ## 1.2.0 - 2026-09-05
 
 ### Added

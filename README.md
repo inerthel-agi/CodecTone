@@ -2,7 +2,7 @@
 
 CodecTone converts, compresses, cuts, remixes, and extracts embedded album artwork locally on Windows with FFmpeg. It provides a WPF interface and a command-line executable. Media processing does not use cloud storage or telemetry.
 
-Repository: [github.com/stealthsrc/CodecTone](https://github.com/stealthsrc/CodecTone)
+Repository: [github.com/inerthel-agi/CodecTone](https://github.com/inerthel-agi/CodecTone)
 
 ## Requirements
 
@@ -18,7 +18,7 @@ CodecTone can install FFmpeg 9.0.1 in `%LOCALAPPDATA%\AudioConverter\runtime\ffm
 Clone and build the project:
 
 ```console
-git clone https://github.com/stealthsrc/CodecTone.git
+git clone https://github.com/inerthel-agi/CodecTone.git
 cd CodecTone
 build_executable.bat
 ```

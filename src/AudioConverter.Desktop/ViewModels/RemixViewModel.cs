@@ -6,12 +6,15 @@ using AudioConverter.Core.Paths;
 using AudioConverter.Core.Remix;
 using AudioConverter.Core.Validation;
 using AudioConverter.Desktop.Mvvm;
+using AudioConverter.Infrastructure.Storage;
 
 namespace AudioConverter.Desktop.ViewModels;
 
 public sealed class RemixViewModel : WorkspaceBase
 {
     private readonly HashSet<Task> analysisTasks = [];
+    private readonly UserPresetStore presetStore = new();
+    private string newPresetName = "";
     private CancellationTokenSource? remixAnalysisCancellation;
     private AudioAnalysis? remixAnalysis;
     private string remixSourcePath = "";
@@ -68,6 +71,66 @@ public sealed class RemixViewModel : WorkspaceBase
         PreviewOriginalCommand = new AsyncRelayCommand(() => PreviewRemixAsync(true), () => !Host.IsBusy && RemixDurationSeconds > 0);
         StopRemixCommand = new RelayCommand(() => { Host.CancelActiveOperation(); Host.StopPreview(); Host.Status = "Remix preview stopped."; });
         ExportRemixCommand = new AsyncRelayCommand(ExportRemixAsync, () => !Host.IsBusy && RemixDurationSeconds > 0);
+        SaveUserPresetCommand = new RelayCommand(SaveUserPreset, () => RemixEffects.Count > 0 && !string.IsNullOrWhiteSpace(NewPresetName));
+        ApplyUserPresetCommand = new RelayCommand<UserRemixPreset>(ApplyUserPreset);
+        DeleteUserPresetCommand = new RelayCommand<UserRemixPreset>(DeleteUserPreset);
+        foreach (var preset in presetStore.Load()) UserPresets.Add(preset);
+        UserPresets.CollectionChanged += (_, _) => Raise(nameof(HasUserPresets));
+        RemixEffects.CollectionChanged += (_, _) => SaveUserPresetCommand.RaiseCanExecuteChanged();
+    }
+
+    /// <summary>Racks the user saved; they ignore the intensity setting.</summary>
+    public ObservableCollection<UserRemixPreset> UserPresets { get; } = [];
+    public bool HasUserPresets => UserPresets.Count > 0;
+    public string NewPresetName { get => newPresetName; set { if (Set(ref newPresetName, value)) SaveUserPresetCommand.RaiseCanExecuteChanged(); } }
+    public RelayCommand SaveUserPresetCommand { get; }
+    public RelayCommand<UserRemixPreset> ApplyUserPresetCommand { get; }
+    public RelayCommand<UserRemixPreset> DeleteUserPresetCommand { get; }
+
+    private void SaveUserPreset()
+    {
+        var (name, error) = UserRemixPreset.ValidateName(NewPresetName);
+        if (name is null) { Dialogs.Error(error!); return; }
+        var existing = UserPresets.FirstOrDefault(preset => preset.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+        if (existing is not null && !Dialogs.Confirm($"Replace your preset \"{existing.Name}\"?")) return;
+        var preset = new UserRemixPreset(name, RemixEffects.Select(effect => new UserRemixEffect(effect.Kind, effect.Enabled, effect.First, effect.Second, effect.Third)).ToArray());
+        if (!StoreUserPresets(UserPresets.Where(item => item != existing).Append(preset))) return;
+        NewPresetName = "";
+        Host.Status = $"Preset saved: {name}";
+    }
+
+    private void ApplyUserPreset(UserRemixPreset preset)
+    {
+        if (remixRackDirty && RemixEffects.Count > 0
+            && !Dialogs.Confirm("Applying a preset will replace the current effect rack. Continue?")) return;
+        RemixEffects.Clear();
+        foreach (var effect in preset.Effects)
+            RemixEffects.Add(new RemixEffectViewModel(effect.Kind, OnRemixRackChanged) { Enabled = effect.Enabled, First = effect.First, Second = effect.Second, Third = effect.Third });
+        selectedRemixPreset = null;
+        remixRackDirty = false;
+        RemixAdaptiveExplanation = $"Your preset \"{preset.Name}\" is loaded. Intensity does not change it.";
+        Raise(nameof(IsExtremeAudioActive));
+        Raise(nameof(RemixOutputDuration));
+    }
+
+    private void DeleteUserPreset(UserRemixPreset preset)
+    {
+        if (!Dialogs.Confirm($"Delete your preset \"{preset.Name}\"?")) return;
+        StoreUserPresets(UserPresets.Where(item => item != preset));
+    }
+
+    private bool StoreUserPresets(IEnumerable<UserRemixPreset> presets)
+    {
+        var sorted = presets.OrderBy(preset => preset.Name, StringComparer.CurrentCultureIgnoreCase).ToArray();
+        try { presetStore.Save(sorted); }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+        {
+            Dialogs.Error($"Unable to save presets: {error.Message}");
+            return false;
+        }
+        UserPresets.Clear();
+        foreach (var preset in sorted) UserPresets.Add(preset);
+        return true;
     }
 
     public override ICommand PrimaryCommand => ExportRemixCommand;

@@ -63,7 +63,28 @@
                     <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate><DataTemplate><Button Style="{StaticResource PresetCard}" Command="{Binding DataContext.ApplyRemixPresetCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" AutomationProperties.Name="{Binding Name}" ToolTip="{Binding Description}"><StackPanel><TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" /><TextBlock Style="{StaticResource Caption}" Text="{Binding Description}" FontWeight="Normal" Margin="0,4,0,0" /></StackPanel></Button></DataTemplate></ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <Button Content="Reset rack" Command="{Binding ResetRemixRackCommand}" HorizontalAlignment="Left" Padding="14,7" Margin="0,4,0,12" />
+                <StackPanel Visibility="{Binding HasUserPresets, Converter={StaticResource BooleanToVisibility}}" Margin="0,8,0,0">
+                    <TextBlock Style="{StaticResource SectionLabel}" Text="My presets" Margin="0,0,0,8" />
+                    <ItemsControl ItemsSource="{Binding UserPresets}">
+                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Button Style="{StaticResource PresetCard}" Command="{Binding DataContext.ApplyUserPresetCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" AutomationProperties.Name="{Binding Name}"><StackPanel Margin="0,0,26,0"><TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" /><TextBlock Style="{StaticResource Caption}" Text="{Binding Effects.Count, StringFormat={}{0} effects}" FontWeight="Normal" Margin="0,4,0,0" /></StackPanel></Button>
+                                    <Button Style="{StaticResource IconButton}" Content="{StaticResource GlyphRemove}" Width="26" Height="26" FontSize="10" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,4,12,0" ToolTip="Delete preset" AutomationProperties.Name="Delete preset" Command="{Binding DataContext.DeleteUserPresetCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+                <Grid Margin="0,6,0,12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                    <Button Content="Reset rack" Command="{Binding ResetRemixRackCommand}" Padding="14,7" />
+                    <Grid Grid.Column="1" Margin="12,0,8,0" MaxWidth="260" HorizontalAlignment="Right">
+                        <TextBox Text="{Binding NewPresetName, UpdateSourceTrigger=PropertyChanged}" MaxLength="40" Padding="10,6" AutomationProperties.Name="New preset name" />
+                        <TextBlock Style="{StaticResource Caption}" Text="Name this rack…" Margin="12,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False" Visibility="{Binding NewPresetName, Converter={StaticResource EmptyToVisibility}}" />
+                    </Grid>
+                    <Button Grid.Column="2" Content="Save as preset" Command="{Binding SaveUserPresetCommand}" Padding="14,7" />
+                </Grid>
                 <Border Style="{StaticResource InfoBox}" Margin="0,0,0,18">
                     <StackPanel><TextBlock Text="{Binding RemixAnalysisStatus}" FontWeight="SemiBold" TextWrapping="Wrap" /><TextBlock Style="{StaticResource Caption}" Text="{Binding RemixAdaptiveExplanation}" Margin="0,5,0,0" /></StackPanel>
                 </Border>

@@ -221,6 +221,8 @@ public sealed class WorkspaceTests
                 }
                 if (workspace == "Remix")
                 {
+                    vm.Remix.UserPresets.Clear();
+                    vm.Remix.UserPresets.Add(new UserRemixPreset("Night drive", [new UserRemixEffect(RemixEffectKind.Reverb, true, 0.3, 2.5, 0.7)]));
                     vm.Remix.AddRemixEffectCommand.Execute(null);
                     vm.Remix.SelectedRemixEffectKind = RemixEffectKind.Reverb;
                     vm.Remix.AddRemixEffectCommand.Execute(null);

@@ -18,7 +18,7 @@ public sealed class ConvertViewModel : WorkspaceBase
     private bool preserveMetadata = true;
     private bool overwrite;
 
-    public ConvertViewModel(WorkspaceHost host) : base(host, "Convert", "No conversion has run yet.")
+    public ConvertViewModel(WorkspaceHost host) : base(host, "Convert", "ReportEmptyConvert")
     {
         ChooseFileCommand = new RelayCommand(() => { if (Dialogs.ChooseAudioFiles() is { } paths) AddSources(paths); });
         ChooseFolderCommand = new RelayCommand(() => { if (Dialogs.ChooseFolder() is { } path) AddSources([path]); });

@@ -32,7 +32,7 @@ public sealed class NormalizeViewModel : WorkspaceBase
     private string planSummary = NoSourceText;
     private MeasuredSource? measurement;
 
-    public NormalizeViewModel(WorkspaceHost host) : base(host, "Normalize", "Nothing has run yet.")
+    public NormalizeViewModel(WorkspaceHost host) : base(host, "Normalize", "ReportEmptyGeneric")
     {
         ChooseFileCommand = new RelayCommand(() => SetSource(Dialogs.ChooseAudioFile()), () => !Host.IsBusy);
         ChooseFolderCommand = new RelayCommand(() => SetSource(Dialogs.ChooseFolder()), () => !Host.IsBusy);

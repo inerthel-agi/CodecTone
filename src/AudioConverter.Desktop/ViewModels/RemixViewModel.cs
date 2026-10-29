@@ -52,7 +52,7 @@ public sealed class RemixViewModel : WorkspaceBase
     private string remixAnalysisStatus = "Choose a song to enable adaptive presets.";
     private string remixAdaptiveExplanation = "Presets use safe static defaults until a song is analyzed.";
 
-    public RemixViewModel(WorkspaceHost host) : base(host, "Remix", "No remix has been exported yet.")
+    public RemixViewModel(WorkspaceHost host) : base(host, "Remix", "ReportEmptyRemix")
     {
         ChooseRemixFileCommand = new AsyncRelayCommand(async () => { var path = Dialogs.ChooseAudioFile(); if (path is not null) await LoadRemixSourceAsync(path); }, () => !Host.IsBusy);
         SelectRemixCategoryCommand = new RelayCommand<string>(name => { if (Enum.TryParse<RemixPresetCategory>(name, out var category)) SelectedRemixCategory = category; });

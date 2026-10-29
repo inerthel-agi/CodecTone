@@ -21,7 +21,7 @@ public sealed class ArtworkViewModel : WorkspaceBase
     private System.Windows.Media.Imaging.BitmapImage? artworkPreview;
     private string artworkPreviewInfo = "Select an album and preview its cover.";
 
-    public ArtworkViewModel(WorkspaceHost host) : base(host, "Artwork", "No artwork extraction has run yet.")
+    public ArtworkViewModel(WorkspaceHost host) : base(host, "Artwork", "ReportEmptyArtwork")
     {
         ChooseArtworkFileCommand = new AsyncRelayCommand(() => ChooseSourceAsync(Dialogs.ChooseAudioFile()), () => !Host.IsBusy);
         ChooseArtworkFolderCommand = new AsyncRelayCommand(() => ChooseSourceAsync(Dialogs.ChooseFolder()), () => !Host.IsBusy);

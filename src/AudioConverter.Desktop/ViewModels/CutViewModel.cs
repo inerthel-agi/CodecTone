@@ -26,7 +26,7 @@ public sealed class CutViewModel : WorkspaceBase
     private double[] waveformPeaks = [];
     private double cutPlayheadSeconds = double.NaN;
 
-    public CutViewModel(WorkspaceHost host) : base(host, "Cut", "No cut has run yet.")
+    public CutViewModel(WorkspaceHost host) : base(host, "Cut", "ReportEmptyCut")
     {
         ChooseCutFileCommand = new AsyncRelayCommand(async () => { var path = Dialogs.ChooseAudioFile(); if (path is not null) await LoadCutSourceAsync(path); }, () => !Host.IsBusy);
         ChooseCutOutputCommand = new RelayCommand(() => CutOutputFolder = Dialogs.ChooseFolder(CutOutputFolder) ?? CutOutputFolder);

@@ -1,10 +1,10 @@
 <UserControl x:Class="AudioConverter.Desktop.Views.AboutView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:l="clr-namespace:AudioConverter.Desktop.Localization"
              xmlns:controls="clr-namespace:AudioConverter.Desktop.Controls">
     <StackPanel Style="{StaticResource PageHost}">
-        <TextBlock Style="{StaticResource PageTitle}" Text="About" />
-        <TextBlock Style="{StaticResource PageSubtitle}" Text="Local audio tools for Windows." />
+        <TextBlock Style="{StaticResource PageTitle}" Text="{l:T About}" />
+        <TextBlock Style="{StaticResource PageSubtitle}" Text="{l:T LocalAudioToolsForWindows}" />
         <Border Style="{StaticResource Card}" Padding="32">
             <StackPanel>
                 <Grid>
@@ -13,47 +13,47 @@
                     <StackPanel Grid.Column="1">
                         <TextBlock Text="CodecTone" FontSize="32" FontWeight="Bold" />
                         <WrapPanel Margin="0,10,0,0">
-                            <Border Background="{DynamicResource AccentMutedBrush}" CornerRadius="4" Padding="10,5" Margin="0,0,8,0"><TextBlock Text="Local processing" Foreground="{DynamicResource AccentBrush}" FontSize="12" FontWeight="SemiBold" /></Border>
-                            <Border Background="{DynamicResource PanelRaisedBrush}" CornerRadius="4" Padding="10,5" Margin="0,0,8,0"><TextBlock Text="No telemetry" FontSize="12" FontWeight="SemiBold" /></Border>
-                            <Border Background="{DynamicResource PanelRaisedBrush}" CornerRadius="4" Padding="10,5"><TextBlock Text="Windows" FontSize="12" FontWeight="SemiBold" /></Border>
+                            <Border Background="{DynamicResource AccentMutedBrush}" CornerRadius="4" Padding="10,5" Margin="0,0,8,0"><TextBlock Text="{l:T LocalProcessing}" Foreground="{DynamicResource AccentBrush}" FontSize="12" FontWeight="SemiBold" /></Border>
+                            <Border Background="{DynamicResource PanelRaisedBrush}" CornerRadius="4" Padding="10,5" Margin="0,0,8,0"><TextBlock Text="{l:T NoTelemetry}" FontSize="12" FontWeight="SemiBold" /></Border>
+                            <Border Background="{DynamicResource PanelRaisedBrush}" CornerRadius="4" Padding="10,5"><TextBlock Text="{l:T Windows}" FontSize="12" FontWeight="SemiBold" /></Border>
                         </WrapPanel>
                     </StackPanel>
                     <StackPanel Grid.Column="2" HorizontalAlignment="Right">
-                        <TextBlock Style="{StaticResource Caption}" Text="Version" HorizontalAlignment="Right" />
+                        <TextBlock Style="{StaticResource Caption}" Text="{l:T Version}" HorizontalAlignment="Right" />
                         <TextBlock Text="{Binding ProductVersion}" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Right" Margin="0,2,0,0" />
                     </StackPanel>
                 </Grid>
 
                 <Separator Style="{StaticResource Rule}" Margin="0,28" />
-                <TextBlock Style="{StaticResource SectionLabel}" Text="What CodecTone does" Foreground="{DynamicResource MutedTextBrush}" Margin="0,0,0,16" />
+                <TextBlock Style="{StaticResource SectionLabel}" Text="{l:T WhatCodecToneDoes}" Foreground="{DynamicResource MutedTextBrush}" Margin="0,0,0,16" />
                 <UniformGrid Columns="3">
-                    <StackPanel Margin="0,0,28,22"><TextBlock Text="Convert" FontSize="18" FontWeight="SemiBold" /><TextBlock Style="{StaticResource Caption}" FontSize="13" Text="Move between MP3, FLAC, WAV, OGG, AAC and M4A with explicit quality controls." Margin="0,6,0,0" LineHeight="20" /></StackPanel>
-                    <StackPanel Margin="0,0,28,22"><TextBlock Text="Cut" FontSize="18" FontWeight="SemiBold" /><TextBlock Style="{StaticResource Caption}" FontSize="13" Text="Select an exact waveform range, add fades and preview the result before export." Margin="0,6,0,0" LineHeight="20" /></StackPanel>
-                    <StackPanel Margin="0,0,0,22"><TextBlock Text="Compress" FontSize="18" FontWeight="SemiBold" /><TextBlock Style="{StaticResource Caption}" FontSize="13" Text="Reduce file size with quality profiles, target budgets and recursive folder processing." Margin="0,6,0,0" LineHeight="20" /></StackPanel>
-                    <StackPanel Margin="0,0,28,0"><TextBlock Text="Artwork" FontSize="18" FontWeight="SemiBold" /><TextBlock Style="{StaticResource Caption}" FontSize="13" Text="Extract one embedded front cover per album in its original format or as PNG, JPEG or WebP." Margin="0,6,0,0" LineHeight="20" /></StackPanel>
-                    <StackPanel Margin="0,0,28,0"><TextBlock Text="Remix" FontSize="18" FontWeight="SemiBold" /><TextBlock Style="{StaticResource Caption}" FontSize="13" Text="Build an effect rack, preview twenty seconds, edit metadata and export one transformed song." Margin="0,6,0,0" LineHeight="20" /></StackPanel>
+                    <StackPanel Margin="0,0,28,22"><TextBlock Text="{l:T Convert}" FontSize="18" FontWeight="SemiBold" /><TextBlock Style="{StaticResource Caption}" FontSize="13" Text="{l:T MoveBetweenMP3FLACWAVOGG}" Margin="0,6,0,0" LineHeight="20" /></StackPanel>
+                    <StackPanel Margin="0,0,28,22"><TextBlock Text="{l:T Cut}" FontSize="18" FontWeight="SemiBold" /><TextBlock Style="{StaticResource Caption}" FontSize="13" Text="{l:T SelectAnExactWaveformRangeAdd}" Margin="0,6,0,0" LineHeight="20" /></StackPanel>
+                    <StackPanel Margin="0,0,0,22"><TextBlock Text="{l:T Compress}" FontSize="18" FontWeight="SemiBold" /><TextBlock Style="{StaticResource Caption}" FontSize="13" Text="{l:T ReduceFileSizeWithQualityProfiles}" Margin="0,6,0,0" LineHeight="20" /></StackPanel>
+                    <StackPanel Margin="0,0,28,0"><TextBlock Text="{l:T Artwork}" FontSize="18" FontWeight="SemiBold" /><TextBlock Style="{StaticResource Caption}" FontSize="13" Text="{l:T ExtractOneEmbeddedFrontCoverPer}" Margin="0,6,0,0" LineHeight="20" /></StackPanel>
+                    <StackPanel Margin="0,0,28,0"><TextBlock Text="{l:T Remix}" FontSize="18" FontWeight="SemiBold" /><TextBlock Style="{StaticResource Caption}" FontSize="13" Text="{l:T BuildAnEffectRackPreviewTwenty}" Margin="0,6,0,0" LineHeight="20" /></StackPanel>
                 </UniformGrid>
 
                 <Separator Style="{StaticResource Rule}" Margin="0,28" />
-                <TextBlock Style="{StaticResource SectionLabel}" Text="How it works" Foreground="{DynamicResource MutedTextBrush}" Margin="0,0,0,16" />
+                <TextBlock Style="{StaticResource SectionLabel}" Text="{l:T HowItWorks}" Foreground="{DynamicResource MutedTextBrush}" Margin="0,0,0,16" />
                 <UniformGrid Columns="4">
-                    <StackPanel Margin="0,0,22,0"><TextBlock Text="01" Foreground="{DynamicResource AccentBrush}" FontSize="18" FontWeight="Bold" /><TextBlock Text="Select" FontWeight="SemiBold" Margin="0,6,0,0" /><TextBlock Style="{StaticResource Caption}" Text="Choose or drop a file or folder." Margin="0,4,0,0" /></StackPanel>
-                    <StackPanel Margin="0,0,22,0"><TextBlock Text="02" Foreground="{DynamicResource AccentBrush}" FontSize="18" FontWeight="Bold" /><TextBlock Text="Validate" FontWeight="SemiBold" Margin="0,6,0,0" /><TextBlock Style="{StaticResource Caption}" Text="ffprobe checks streams and metadata." Margin="0,4,0,0" /></StackPanel>
-                    <StackPanel Margin="0,0,22,0"><TextBlock Text="03" Foreground="{DynamicResource AccentBrush}" FontSize="18" FontWeight="Bold" /><TextBlock Text="Process" FontWeight="SemiBold" Margin="0,6,0,0" /><TextBlock Style="{StaticResource Caption}" Text="FFmpeg works locally on your PC." Margin="0,4,0,0" /></StackPanel>
-                    <StackPanel><TextBlock Text="04" Foreground="{DynamicResource AccentBrush}" FontSize="18" FontWeight="Bold" /><TextBlock Text="Write" FontWeight="SemiBold" Margin="0,6,0,0" /><TextBlock Style="{StaticResource Caption}" Text="CodecTone saves the result you chose." Margin="0,4,0,0" /></StackPanel>
+                    <StackPanel Margin="0,0,22,0"><TextBlock Text="01" Foreground="{DynamicResource AccentBrush}" FontSize="18" FontWeight="Bold" /><TextBlock Text="{l:T Select}" FontWeight="SemiBold" Margin="0,6,0,0" /><TextBlock Style="{StaticResource Caption}" Text="{l:T ChooseOrDropAFileOr}" Margin="0,4,0,0" /></StackPanel>
+                    <StackPanel Margin="0,0,22,0"><TextBlock Text="02" Foreground="{DynamicResource AccentBrush}" FontSize="18" FontWeight="Bold" /><TextBlock Text="{l:T Validate}" FontWeight="SemiBold" Margin="0,6,0,0" /><TextBlock Style="{StaticResource Caption}" Text="{l:T FfprobeChecksStreamsAndMetadata}" Margin="0,4,0,0" /></StackPanel>
+                    <StackPanel Margin="0,0,22,0"><TextBlock Text="03" Foreground="{DynamicResource AccentBrush}" FontSize="18" FontWeight="Bold" /><TextBlock Text="{l:T Process}" FontWeight="SemiBold" Margin="0,6,0,0" /><TextBlock Style="{StaticResource Caption}" Text="{l:T FFmpegWorksLocallyOnYourPC}" Margin="0,4,0,0" /></StackPanel>
+                    <StackPanel><TextBlock Text="04" Foreground="{DynamicResource AccentBrush}" FontSize="18" FontWeight="Bold" /><TextBlock Text="{l:T Write}" FontWeight="SemiBold" Margin="0,6,0,0" /><TextBlock Style="{StaticResource Caption}" Text="{l:T CodecToneSavesTheResultYouChose}" Margin="0,4,0,0" /></StackPanel>
                 </UniformGrid>
 
                 <Separator Style="{StaticResource Rule}" Margin="0,28" />
                 <Grid>
                     <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="32" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                    <StackPanel><TextBlock Style="{StaticResource SectionLabel}" Text="Privacy" Foreground="{DynamicResource MutedTextBrush}" /><TextBlock Text="Your media stays on this computer. CodecTone has no cloud storage, analytics or telemetry. Network access occurs only when you request FFmpeg installation or open GitHub." TextWrapping="Wrap" LineHeight="20" /></StackPanel>
-                    <StackPanel Grid.Column="2"><TextBlock Style="{StaticResource SectionLabel}" Text="Built with" Foreground="{DynamicResource MutedTextBrush}" /><TextBlock Text=".NET 8 · WPF · FFmpeg" FontSize="17" FontWeight="SemiBold" /><TextBlock Style="{StaticResource Caption}" Text="Created by inerthel · MIT License" Margin="0,6,0,0" /></StackPanel>
+                    <StackPanel><TextBlock Style="{StaticResource SectionLabel}" Text="{l:T Privacy}" Foreground="{DynamicResource MutedTextBrush}" /><TextBlock Text="{l:T YourMediaStaysOnThisComputer}" TextWrapping="Wrap" LineHeight="20" /></StackPanel>
+                    <StackPanel Grid.Column="2"><TextBlock Style="{StaticResource SectionLabel}" Text="{l:T BuiltWith}" Foreground="{DynamicResource MutedTextBrush}" /><TextBlock Text=".NET 8 · WPF · FFmpeg" FontSize="17" FontWeight="SemiBold" /><TextBlock Style="{StaticResource Caption}" Text="{l:T CreatedByInerthelMITLicense}" Margin="0,6,0,0" /></StackPanel>
                 </Grid>
 
-                <TextBlock Style="{StaticResource Caption}" Text="Diagnostics are stored locally (about 1 MiB maximum). Reports may include file paths. Nothing is uploaded." Margin="0,24,0,10" />
+                <TextBlock Style="{StaticResource Caption}" Text="{l:T DiagnosticsAreStoredLocallyAbout1}" Margin="0,24,0,10" />
                 <WrapPanel>
-                    <Button Content="Open local diagnostics" Command="{Binding OpenDiagnosticsCommand}" Margin="0,0,8,0" />
-                    <Button Content="View on GitHub" Command="{Binding OpenGitHubCommand}" AutomationProperties.Name="Open the inerthel GitHub profile" />
+                    <Button Content="{l:T OpenLocalDiagnostics}" Command="{Binding OpenDiagnosticsCommand}" Margin="0,0,8,0" />
+                    <Button Content="{l:T ViewOnGitHub}" Command="{Binding OpenGitHubCommand}" AutomationProperties.Name="{l:T OpenTheInerthelGitHubProfile}" />
                 </WrapPanel>
             </StackPanel>
         </Border>

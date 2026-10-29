@@ -9,15 +9,27 @@ namespace AudioConverter.Desktop.ViewModels;
 /// <summary>A tool page: owns its report, primary action and drop handling, and runs work through the shared host.</summary>
 public abstract class WorkspaceBase : ObservableObject
 {
+    private readonly string emptyReportKey;
     private string report;
+    private bool reportIsPlaceholder = true;
 
-    protected WorkspaceBase(WorkspaceHost host, string key, string emptyReport)
+    /// <param name="emptyReportKey">String key of the report text shown before anything has run.</param>
+    protected WorkspaceBase(WorkspaceHost host, string key, string emptyReportKey)
     {
         Host = host;
         Key = key;
-        report = emptyReport;
+        this.emptyReportKey = emptyReportKey;
+        report = Localization.Localizer.T(emptyReportKey);
         SaveReportCommand = new AsyncRelayCommand(SaveReportAsync, () => !Host.IsBusy);
         host.StateChanged += () => { SaveReportCommand.RaiseCanExecuteChanged(); RaiseCommands(); };
+        Localization.Localizer.Instance.LanguageChanged += OnLanguageChanged;
+    }
+
+    /// <summary>Refreshes text computed in code; XAML text follows the language through bindings.</summary>
+    protected virtual void OnLanguageChanged()
+    {
+        if (reportIsPlaceholder) { report = Localization.Localizer.T(emptyReportKey); Raise(nameof(Report)); }
+        Raise(nameof(PrimaryLabel));
     }
 
     public IReadOnlyList<AudioFormat> Formats => AudioFormats.All;
@@ -27,7 +39,7 @@ public abstract class WorkspaceBase : ObservableObject
     public WorkspaceHost Host { get; }
     public string Key { get; }
     protected IDialogService Dialogs => Host.Dialogs;
-    public string Report { get => report; protected set => Set(ref report, value); }
+    public string Report { get => report; protected set { reportIsPlaceholder = false; Set(ref report, value); } }
     public AsyncRelayCommand SaveReportCommand { get; }
 
     /// <summary>The main action shown in the bottom bar.</summary>

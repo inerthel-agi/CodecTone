@@ -37,7 +37,7 @@ public sealed class SplitViewModel : WorkspaceBase
     private string filePattern = TrackFileNamer.DefaultPattern;
     private bool overwrite;
 
-    public SplitViewModel(WorkspaceHost host) : base(host, "Split", "Nothing has run yet.")
+    public SplitViewModel(WorkspaceHost host) : base(host, "Split", "ReportEmptyGeneric")
     {
         ChooseSourceCommand = new AsyncRelayCommand(ChooseSourceAsync, () => !Host.IsBusy);
         ChooseCueCommand = new RelayCommand(ChooseCue, () => !Host.IsBusy && HasSource);

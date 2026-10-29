@@ -21,7 +21,7 @@ public sealed class CompressViewModel : WorkspaceBase
     private bool compressionOverwrite;
     private string compressionEstimate = "Choose a source, then analyze it to estimate the output size.";
 
-    public CompressViewModel(WorkspaceHost host) : base(host, "Compress", "No compression has run yet.")
+    public CompressViewModel(WorkspaceHost host) : base(host, "Compress", "ReportEmptyCompress")
     {
         ChooseCompressionFileCommand = new AsyncRelayCommand(() => ChooseSourceAsync(Dialogs.ChooseAudioFile()), () => !Host.IsBusy);
         ChooseCompressionFolderCommand = new AsyncRelayCommand(() => ChooseSourceAsync(Dialogs.ChooseFolder()), () => !Host.IsBusy);

@@ -13,7 +13,7 @@ public partial class MainWindow : Window
         var accepted = e.Data.GetDataPresent(DataFormats.FileDrop);
         e.Effects = accepted ? DragDropEffects.Copy : DragDropEffects.None;
         // DragOver keeps firing while the pointer is inside, so it re-shows the overlay right after a child's DragLeave.
-        var canLoad = accepted && DataContext is MainViewModel { IsToolWorkspace: true, IsWorkspaceEnabled: true };
+        var canLoad = accepted && DataContext is MainViewModel { IsToolWorkspace: true, Host.IsWorkspaceEnabled: true };
         DropOverlay.Visibility = canLoad ? Visibility.Visible : Visibility.Collapsed;
         e.Handled = true;
     }

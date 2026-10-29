@@ -1,0 +1,59 @@
+<UserControl x:Class="AudioConverter.Desktop.Views.CompressView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:AudioConverter.Desktop.Controls">
+    <StackPanel Style="{StaticResource PageHost}">
+        <TextBlock Style="{StaticResource PageTitle}" Text="Compress" />
+        <TextBlock Style="{StaticResource PageSubtitle}" Text="Reduce file size with a quality profile or a total size budget. Folders include their subfolders." />
+        <Border Style="{StaticResource Card}">
+            <StackPanel>
+                <TextBlock Style="{StaticResource SectionLabel}" Text="Source" />
+                <ContentControl Style="{StaticResource DropZone}" Visibility="{Binding CompressionSourcePath, Converter={StaticResource EmptyToVisibility}}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource DropGlyph}" />
+                        <TextBlock Style="{StaticResource DropTitle}" Text="Drop an audio file or a folder here" />
+                        <TextBlock Style="{StaticResource Caption}" Text="The source is analyzed as soon as you choose it." HorizontalAlignment="Center" />
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,14,0,0"><Button Content="Choose file" Command="{Binding ChooseCompressionFileCommand}" Margin="0,0,8,0" /><Button Content="Choose folder" Command="{Binding ChooseCompressionFolderCommand}" /></StackPanel>
+                    </StackPanel>
+                </ContentControl>
+                <Border Style="{StaticResource FileCard}" Visibility="{Binding CompressionSourcePath, Converter={StaticResource EmptyToVisibility}, ConverterParameter=Invert}">
+                    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <TextBlock Style="{StaticResource FileGlyph}" Text="{Binding CompressionSourcePath, Converter={StaticResource PathPart}, ConverterParameter=Glyph}" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center"><TextBlock Style="{StaticResource FileName}" Text="{Binding CompressionSourcePath, Converter={StaticResource PathPart}}" /><TextBlock Style="{StaticResource FilePath}" Text="{Binding CompressionSourcePath, Converter={StaticResource PathPart}, ConverterParameter=Parent}" /></StackPanel>
+                        <Button Grid.Column="2" Content="Change file" Command="{Binding ChooseCompressionFileCommand}" Margin="12,0,8,0" />
+                        <Button Grid.Column="3" Content="Change folder" Command="{Binding ChooseCompressionFolderCommand}" />
+                    </Grid>
+                </Border>
+                <Separator Style="{StaticResource Rule}" />
+
+                <TextBlock Style="{StaticResource SectionLabel}" Text="Compress to" />
+                <ListBox Style="{StaticResource SegmentedList}" ItemsSource="{Binding CompressionFormats}" SelectedItem="{Binding CompressionFormat}" ItemTemplate="{StaticResource FormatItem}" AutomationProperties.Name="Compression format" />
+                <Grid Margin="0,16,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="14" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                    <StackPanel><TextBlock Text="Compression profile" Margin="0,0,0,7" /><ComboBox ItemsSource="{Binding CompressionProfiles}" SelectedItem="{Binding SelectedCompressionProfile}" /></StackPanel>
+                    <StackPanel Grid.Column="2" Visibility="{Binding IsTargetSizeCompression, Converter={StaticResource BooleanToVisibility}}"><TextBlock Text="Target total size · MiB" Margin="0,0,0,7" /><TextBox Text="{Binding CompressionTargetTotalMb}" /></StackPanel>
+                    <Button Grid.Column="3" Content="Analyze" Command="{Binding AnalyzeCompressionCommand}" VerticalAlignment="Bottom" Margin="14,0,0,0" />
+                </Grid>
+                <Border Style="{StaticResource InfoBox}" Margin="0,18,0,0"><TextBlock Text="{Binding CompressionEstimate}" TextWrapping="Wrap" /></Border>
+                <Separator Style="{StaticResource Rule}" />
+
+                <TextBlock Style="{StaticResource SectionLabel}" Text="Destination" />
+                <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="200" /></Grid.ColumnDefinitions>
+                    <StackPanel><TextBlock Text="Output folder" Margin="0,0,0,7" /><TextBox Text="{Binding CompressionOutputFolder}" /></StackPanel>
+                    <Button Grid.Column="1" Content="Browse" Command="{Binding ChooseCompressionOutputCommand}" VerticalAlignment="Bottom" Margin="8,0,16,0" />
+                    <StackPanel Grid.Column="2"><TextBlock Text="File suffix · optional" Margin="0,0,0,7" /><TextBox Text="{Binding CompressionSuffix}" /></StackPanel>
+                </Grid>
+                <TextBlock Style="{StaticResource Caption}" Text="Leave blank to create a 'compressed' folder and keep the source tree." Margin="2,8,0,12" />
+                <WrapPanel>
+                    <CheckBox Content="Keep metadata and cover art" IsChecked="{Binding CompressionPreserveMetadata}" Margin="0,4,28,4" />
+                    <CheckBox Content="Shrink large cover art · max 1200 px" IsChecked="{Binding CompressionOptimizeArtwork}" Margin="0,4,28,4" />
+                    <CheckBox Content="Overwrite existing files" IsChecked="{Binding CompressionOverwrite}" />
+                </WrapPanel>
+                <TextBlock Style="{StaticResource Caption}" Text="Re-encoding lossy files asks for confirmation because it can reduce quality." Margin="2,6,0,0" />
+                <Separator Style="{StaticResource Rule}" />
+
+                <DockPanel Margin="0,0,0,8"><Button DockPanel.Dock="Right" Content="Save report" Command="{Binding SaveReportCommand}" Padding="12,5" /><TextBlock Style="{StaticResource SectionLabel}" Text="Report" Margin="0" VerticalAlignment="Center" /></DockPanel>
+                <ContentControl Content="{Binding Report}" ContentTemplate="{StaticResource ReportView}" Focusable="False" />
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

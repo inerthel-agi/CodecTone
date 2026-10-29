@@ -1,0 +1,54 @@
+<UserControl x:Class="AudioConverter.Desktop.Views.ConvertView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:AudioConverter.Desktop.Controls">
+    <StackPanel Style="{StaticResource PageHost}">
+        <TextBlock Style="{StaticResource PageTitle}" Text="Convert" />
+        <TextBlock Style="{StaticResource PageSubtitle}" Text="Change the format and quality of one file, or of every file in a folder." />
+        <Border Style="{StaticResource Card}">
+            <StackPanel>
+                <TextBlock Style="{StaticResource SectionLabel}" Text="Source" />
+                <ContentControl Style="{StaticResource DropZone}" Visibility="{Binding SourcePath, Converter={StaticResource EmptyToVisibility}}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource DropGlyph}" />
+                        <TextBlock Style="{StaticResource DropTitle}" Text="Drop an audio file or a folder here" />
+                        <TextBlock Style="{StaticResource Caption}" Text="Folders are converted without their subfolders." HorizontalAlignment="Center" />
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,14,0,0"><Button Content="Choose file" Command="{Binding ChooseFileCommand}" Margin="0,0,8,0" /><Button Content="Choose folder" Command="{Binding ChooseFolderCommand}" /></StackPanel>
+                    </StackPanel>
+                </ContentControl>
+                <Border Style="{StaticResource FileCard}" Visibility="{Binding SourcePath, Converter={StaticResource EmptyToVisibility}, ConverterParameter=Invert}">
+                    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <TextBlock Style="{StaticResource FileGlyph}" Text="{Binding SourcePath, Converter={StaticResource PathPart}, ConverterParameter=Glyph}" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center"><TextBlock Style="{StaticResource FileName}" Text="{Binding SourcePath, Converter={StaticResource PathPart}}" /><TextBlock Style="{StaticResource FilePath}" Text="{Binding SourcePath, Converter={StaticResource PathPart}, ConverterParameter=Parent}" /></StackPanel>
+                        <Button Grid.Column="2" Content="Change file" Command="{Binding ChooseFileCommand}" Margin="12,0,8,0" />
+                        <Button Grid.Column="3" Content="Change folder" Command="{Binding ChooseFolderCommand}" />
+                    </Grid>
+                </Border>
+                <Separator Style="{StaticResource Rule}" />
+
+                <TextBlock Style="{StaticResource SectionLabel}" Text="Output format" />
+                <ListBox Style="{StaticResource SegmentedList}" ItemsSource="{Binding Formats}" SelectedItem="{Binding SelectedFormat}" ItemTemplate="{StaticResource FormatItem}" AutomationProperties.Name="Output format" />
+                <Grid Margin="0,16,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="14" /><ColumnDefinition Width="*" /><ColumnDefinition Width="14" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                    <StackPanel Visibility="{Binding IsLossyFormat, Converter={StaticResource BooleanToVisibility}}"><TextBlock Text="Audio quality" Margin="0,0,0,7" /><ComboBox ItemsSource="{Binding Bitrates}" SelectedItem="{Binding Bitrate}" /></StackPanel>
+                    <StackPanel Visibility="{Binding IsLosslessFormat, Converter={StaticResource BooleanToVisibility}}"><TextBlock Text="Sample rate" Margin="0,0,0,7" /><ComboBox ItemsSource="{Binding SampleRates}" SelectedItem="{Binding SampleRate}" /></StackPanel>
+                    <StackPanel Grid.Column="2" Visibility="{Binding IsLosslessFormat, Converter={StaticResource BooleanToVisibility}}"><TextBlock Text="Bit depth" Margin="0,0,0,7" /><ComboBox ItemsSource="{Binding BitDepths}" SelectedItem="{Binding BitDepth}" /></StackPanel>
+                </Grid>
+                <Separator Style="{StaticResource Rule}" />
+
+                <TextBlock Style="{StaticResource SectionLabel}" Text="Destination" />
+                <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="200" /></Grid.ColumnDefinitions>
+                    <StackPanel><TextBlock Text="Output folder" Margin="0,0,0,7" /><TextBox Text="{Binding OutputFolder, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
+                    <Button Grid.Column="1" Content="Browse" Command="{Binding ChooseOutputCommand}" VerticalAlignment="Bottom" Margin="8,0,16,0" />
+                    <StackPanel Grid.Column="2"><TextBlock Text="File suffix · optional" Margin="0,0,0,7" /><TextBox Text="{Binding Suffix, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
+                </Grid>
+                <TextBlock Style="{StaticResource Caption}" Text="Leave blank to create a 'converted' folder beside each source." Margin="2,8,0,14" />
+                <WrapPanel><CheckBox Content="Keep title, artist, album and cover art" IsChecked="{Binding PreserveMetadata}" Margin="0,4,28,4" /><CheckBox Content="Overwrite existing files" IsChecked="{Binding Overwrite}" /></WrapPanel>
+                <TextBlock Style="{StaticResource Caption}" Text="Tags and embedded cover art are copied when the destination supports them." Margin="2,6,0,0" />
+                <Separator Style="{StaticResource Rule}" />
+
+                <DockPanel Margin="0,0,0,8"><Button DockPanel.Dock="Right" Content="Save report" Command="{Binding SaveReportCommand}" Padding="12,5" /><TextBlock Style="{StaticResource SectionLabel}" Text="Report" Margin="0" VerticalAlignment="Center" /></DockPanel>
+                <ContentControl Content="{Binding Report}" ContentTemplate="{StaticResource ReportView}" Focusable="False" />
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

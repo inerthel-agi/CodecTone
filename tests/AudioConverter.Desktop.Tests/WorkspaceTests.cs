@@ -1,4 +1,3 @@
-using System.Reflection;
 using System.Windows;
 using System.Windows.Threading;
 using AudioConverter.Core.Remix;
@@ -18,12 +17,12 @@ public sealed class WorkspaceTests
         {
             var dialogs = new TestDialogs();
             using var vm = new MainViewModel(dialogs);
-            vm.ApplyRemixPresetCommand.Execute(RemixPresetCatalog.All.Single(p => p.Preset == RemixPreset.BassBoost));
-            vm.RemixEffects[0].First = 3;
-            vm.SelectedRemixIntensity = RemixIntensity.Strong;
+            vm.Remix.ApplyRemixPresetCommand.Execute(RemixPresetCatalog.All.Single(p => p.Preset == RemixPreset.BassBoost));
+            vm.Remix.RemixEffects[0].First = 3;
+            vm.Remix.SelectedRemixIntensity = RemixIntensity.Strong;
             Assert.AreEqual(1, dialogs.Confirmations);
-            Assert.AreEqual(RemixIntensity.Medium, vm.SelectedRemixIntensity);
-            Assert.AreEqual(3d, vm.RemixEffects[0].First);
+            Assert.AreEqual(RemixIntensity.Medium, vm.Remix.SelectedRemixIntensity);
+            Assert.AreEqual(3d, vm.Remix.RemixEffects[0].First);
             await vm.ShutdownAsync();
         });
     }
@@ -35,15 +34,14 @@ public sealed class WorkspaceTests
         {
             using var vm = new MainViewModel(new TestDialogs());
             var release = new TaskCompletionSource();
-            var busy = (Task)typeof(MainViewModel).GetMethod("RunBusyAsync", BindingFlags.NonPublic | BindingFlags.Instance)!
-                .Invoke(vm, [new Func<Task>(async () => { await release.Task; throw new OperationCanceledException(); })])!;
+            var busy = vm.Host.RunBusyAsync(vm.Convert, async () => { await release.Task; throw new OperationCanceledException(); });
             var shutdown = vm.ShutdownAsync();
             Assert.IsFalse(shutdown.IsCompleted);
-            Assert.IsFalse(vm.IsWorkspaceEnabled);
+            Assert.IsFalse(vm.Host.IsWorkspaceEnabled);
             release.SetResult();
             await shutdown;
             await busy;
-            StringAssert.Contains(vm.Report, "CANCELLED");
+            StringAssert.Contains(vm.Convert.Report, "CANCELLED");
         });
     }
 
@@ -53,10 +51,10 @@ public sealed class WorkspaceTests
         await OnSta(async () =>
         {
             using var vm = new MainViewModel(new TestDialogs());
-            vm.ApplyRemixPresetCommand.Execute(RemixPresetCatalog.All.Single(p => p.Preset == RemixPreset.BassBoost));
-            var before = vm.RemixEffects.Select(e => e.ToModel()).ToArray();
-            vm.PreviewVolume = 10;
-            CollectionAssert.AreEqual(before, vm.RemixEffects.Select(e => e.ToModel()).ToArray());
+            vm.Remix.ApplyRemixPresetCommand.Execute(RemixPresetCatalog.All.Single(p => p.Preset == RemixPreset.BassBoost));
+            var before = vm.Remix.RemixEffects.Select(e => e.ToModel()).ToArray();
+            vm.Remix.PreviewVolume = 10;
+            CollectionAssert.AreEqual(before, vm.Remix.RemixEffects.Select(e => e.ToModel()).ToArray());
             await vm.ShutdownAsync();
         });
     }
@@ -118,6 +116,10 @@ public sealed class WorkspaceTests
     [TestMethod]
     public async Task WorkspaceLayouts_RenderBothThemesAtMinimumSize()
     {
+        var bindingErrors = new BindingErrorListener();
+        System.Diagnostics.PresentationTraceSources.Refresh();
+        System.Diagnostics.PresentationTraceSources.DataBindingSource.Listeners.Add(bindingErrors);
+        System.Diagnostics.PresentationTraceSources.DataBindingSource.Switch.Level = System.Diagnostics.SourceLevels.Error;
         await OnSta(async () =>
         {
             var application = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
@@ -143,9 +145,9 @@ public sealed class WorkspaceTests
                 show.Execute(null);
                 if (workspace == "Remix")
                 {
-                    vm.AddRemixEffectCommand.Execute(null);
-                    vm.SelectedRemixEffectKind = RemixEffectKind.Reverb;
-                    vm.AddRemixEffectCommand.Execute(null);
+                    vm.Remix.AddRemixEffectCommand.Execute(null);
+                    vm.Remix.SelectedRemixEffectKind = RemixEffectKind.Reverb;
+                    vm.Remix.AddRemixEffectCommand.Execute(null);
                 }
                 var window = new MainWindow { DataContext = vm };
                 var root = (FrameworkElement)window.Content;
@@ -166,6 +168,23 @@ public sealed class WorkspaceTests
             }
             application.Shutdown();
         });
+        System.Diagnostics.PresentationTraceSources.DataBindingSource.Listeners.Remove(bindingErrors);
+        Assert.AreEqual(0, bindingErrors.Errors.Count, string.Join("\n", bindingErrors.Errors.Distinct()));
+    }
+
+    /// <summary>Collects "BindingExpression path error" messages, i.e. bindings to properties that do not exist.</summary>
+    private sealed class BindingErrorListener : System.Diagnostics.TraceListener
+    {
+        private readonly System.Text.StringBuilder pending = new();
+        public List<string> Errors { get; } = [];
+        public override void Write(string? message) => pending.Append(message);
+        public override void WriteLine(string? message)
+        {
+            pending.Append(message);
+            var line = pending.ToString();
+            pending.Clear();
+            if (line.Contains("BindingExpression path error", StringComparison.Ordinal)) lock (Errors) Errors.Add(line);
+        }
     }
 
     private static Task OnSta(Func<Task> action)

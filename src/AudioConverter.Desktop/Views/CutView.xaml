@@ -1,0 +1,64 @@
+<UserControl x:Class="AudioConverter.Desktop.Views.CutView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:AudioConverter.Desktop.Controls">
+    <StackPanel Style="{StaticResource PageHost}">
+        <TextBlock Style="{StaticResource PageTitle}" Text="Cut" />
+        <TextBlock Style="{StaticResource PageSubtitle}" Text="Select part of a track, add fades, preview it, then export it." />
+        <Border Style="{StaticResource Card}">
+            <StackPanel>
+                <TextBlock Style="{StaticResource SectionLabel}" Text="Source" />
+                <ContentControl Style="{StaticResource DropZone}" Visibility="{Binding CutSourcePath, Converter={StaticResource EmptyToVisibility}}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource DropGlyph}" />
+                        <TextBlock Style="{StaticResource DropTitle}" Text="Drop one audio file here" />
+                        <TextBlock Style="{StaticResource Caption}" Text="MP3, FLAC, WAV, OGG, AAC or M4A." HorizontalAlignment="Center" />
+                        <Button Content="Choose file" Command="{Binding ChooseCutFileCommand}" HorizontalAlignment="Center" Margin="0,14,0,0" />
+                    </StackPanel>
+                </ContentControl>
+                <Border Style="{StaticResource FileCard}" Visibility="{Binding CutSourcePath, Converter={StaticResource EmptyToVisibility}, ConverterParameter=Invert}">
+                    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <TextBlock Style="{StaticResource FileGlyph}" Text="{StaticResource GlyphAudio}" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center"><TextBlock Style="{StaticResource FileName}" Text="{Binding CutSourcePath, Converter={StaticResource PathPart}}" /><TextBlock Style="{StaticResource FilePath}" Text="{Binding CutSourceDetails}" /></StackPanel>
+                        <Button Grid.Column="2" Content="Change file" Command="{Binding ChooseCutFileCommand}" Margin="12,0,0,0" />
+                    </Grid>
+                </Border>
+                <Separator Style="{StaticResource Rule}" />
+
+                <TextBlock Style="{StaticResource SectionLabel}" Text="Selection" />
+                <controls:WaveformControl Peaks="{Binding WaveformPeaks}" Duration="{Binding DurationSeconds}" Start="{Binding StartSeconds}" End="{Binding EndSeconds}" Playhead="{Binding CutPlayheadSeconds}" Height="240" AutomationProperties.Name="Cut selection waveform" />
+                <DockPanel Margin="0,10,0,16">
+                    <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
+                        <Button Style="{StaticResource TransportButton}" Command="{Binding PreviewCommand}" AutomationProperties.Name="Preview cut"><StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource Icon}" Text="{StaticResource GlyphPlay}" FontSize="12" Margin="0,0,8,0" /><TextBlock Text="Preview cut" /></StackPanel></Button>
+                        <Button Style="{StaticResource TransportButton}" Command="{Binding StopPreviewCommand}" AutomationProperties.Name="Stop preview"><StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource Icon}" Text="{StaticResource GlyphStop}" FontSize="12" Margin="0,0,8,0" /><TextBlock Text="Stop" /></StackPanel></Button>
+                    </StackPanel>
+                    <TextBlock Style="{StaticResource Caption}" Text="Drag a handle, or focus the waveform and use the arrow keys (Shift for 1 s, [ and ] to pick a handle)." VerticalAlignment="Center" Margin="8,0,0,0" />
+                </DockPanel>
+                <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                    <StackPanel Margin="0,0,12,0"><TextBlock Text="Start" Margin="0,0,0,7" /><TextBox Text="{Binding StartSeconds, Converter={StaticResource TimestampConverter}, UpdateSourceTrigger=LostFocus}" /></StackPanel>
+                    <StackPanel Grid.Column="1" Margin="0,0,12,0"><TextBlock Text="End" Margin="0,0,0,7" /><TextBox Text="{Binding EndSeconds, Converter={StaticResource TimestampConverter}, UpdateSourceTrigger=LostFocus}" /></StackPanel>
+                    <StackPanel Grid.Column="2"><TextBlock Text="Selection length" Margin="0,0,0,7" /><TextBlock Text="{Binding SelectionDuration, Converter={StaticResource TimestampConverter}}" FontSize="16" FontWeight="SemiBold" Padding="0,8" /></StackPanel>
+                </Grid>
+                <Grid Margin="0,18,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                    <StackPanel Margin="0,0,12,0"><CheckBox Content="Fade in" IsChecked="{Binding FadeInEnabled}" /><TextBox Text="{Binding FadeInSeconds}" Margin="0,6,0,0" /></StackPanel>
+                    <StackPanel Grid.Column="1"><CheckBox Content="Fade out" IsChecked="{Binding FadeOutEnabled}" /><TextBox Text="{Binding FadeOutSeconds}" Margin="0,6,0,0" /></StackPanel>
+                </Grid>
+                <TextBlock Style="{StaticResource Caption}" Text="Fade duration in seconds." Margin="2,7,0,0" />
+                <Separator Style="{StaticResource Rule}" />
+
+                <TextBlock Style="{StaticResource SectionLabel}" Text="Output format" />
+                <ListBox Style="{StaticResource SegmentedList}" ItemsSource="{Binding Formats}" SelectedItem="{Binding CutFormat}" ItemTemplate="{StaticResource FormatItem}" AutomationProperties.Name="Output format" />
+                <Grid Margin="0,16,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="200" /></Grid.ColumnDefinitions>
+                    <StackPanel><TextBlock Text="Output folder" Margin="0,0,0,7" /><TextBox Text="{Binding CutOutputFolder}" /></StackPanel>
+                    <Button Grid.Column="1" Content="Browse" Command="{Binding ChooseCutOutputCommand}" VerticalAlignment="Bottom" Margin="8,0,16,0" />
+                    <StackPanel Grid.Column="2"><TextBlock Text="File suffix" Margin="0,0,0,7" /><TextBox Text="{Binding CutSuffix}" /></StackPanel>
+                </Grid>
+                <WrapPanel Margin="0,14,0,0"><CheckBox Content="Keep metadata and cover art" IsChecked="{Binding PreserveMetadata}" Margin="0,4,28,4" /><CheckBox Content="Overwrite existing file" IsChecked="{Binding Overwrite}" /></WrapPanel>
+                <Separator Style="{StaticResource Rule}" />
+
+                <DockPanel Margin="0,0,0,8"><Button DockPanel.Dock="Right" Content="Save report" Command="{Binding SaveReportCommand}" Padding="12,5" /><TextBlock Style="{StaticResource SectionLabel}" Text="Report" Margin="0" VerticalAlignment="Center" /></DockPanel>
+                <ContentControl Content="{Binding Report}" ContentTemplate="{StaticResource ReportView}" Focusable="False" />
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

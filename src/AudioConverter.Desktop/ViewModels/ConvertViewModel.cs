@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows.Input;
 using AudioConverter.Core.Models;
@@ -8,7 +9,6 @@ namespace AudioConverter.Desktop.ViewModels;
 
 public sealed class ConvertViewModel : WorkspaceBase
 {
-    private string sourcePath = "";
     private string outputFolder = "";
     private string suffix = "";
     private AudioFormat selectedFormat = AudioFormat.Mp3;
@@ -20,10 +20,28 @@ public sealed class ConvertViewModel : WorkspaceBase
 
     public ConvertViewModel(WorkspaceHost host) : base(host, "Convert", "No conversion has run yet.")
     {
-        ChooseFileCommand = new RelayCommand(() => { var path = Dialogs.ChooseAudioFile(); if (path is not null) SourcePath = path; });
-        ChooseFolderCommand = new RelayCommand(() => { var path = Dialogs.ChooseFolder(); if (path is not null) SourcePath = path; });
+        ChooseFileCommand = new RelayCommand(() => { if (Dialogs.ChooseAudioFiles() is { } paths) AddSources(paths); });
+        ChooseFolderCommand = new RelayCommand(() => { if (Dialogs.ChooseFolder() is { } path) AddSources([path]); });
         ChooseOutputCommand = new RelayCommand(() => { var path = Dialogs.ChooseFolder(OutputFolder); if (path is not null) OutputFolder = path; });
-        ConvertCommand = new AsyncRelayCommand(ConvertAsync, () => !Host.IsBusy && !string.IsNullOrWhiteSpace(SourcePath));
+        ClearQueueCommand = new RelayCommand(() => Queue.Clear());
+        RemoveQueueItemCommand = new RelayCommand<QueueItem>(item => Queue.Remove(item));
+        ConvertCommand = new AsyncRelayCommand(ConvertAsync, () => !Host.IsBusy && Queue.Count > 0);
+        Queue.CollectionChanged += (_, _) => { Raise(nameof(HasQueue)); Raise(nameof(QueueSummary)); ConvertCommand.RaiseCanExecuteChanged(); };
+    }
+
+    /// <summary>Files waiting to be converted, in order.</summary>
+    public ObservableCollection<QueueItem> Queue { get; } = [];
+    public bool HasQueue => Queue.Count > 0;
+    public string QueueSummary => Queue.Count == 1 ? "1 file" : $"{Queue.Count} files";
+    public RelayCommand ClearQueueCommand { get; }
+    public RelayCommand<QueueItem> RemoveQueueItemCommand { get; }
+
+    /// <summary>Adds supported audio files; a folder contributes its files without subfolders. Duplicates are ignored.</summary>
+    public void AddSources(IEnumerable<string> paths)
+    {
+        var known = new HashSet<string>(Queue.Select(item => item.Path), StringComparer.OrdinalIgnoreCase);
+        foreach (var path in paths.SelectMany(EnumerateSources).Select(Path.GetFullPath))
+            if (known.Add(path)) Queue.Add(new QueueItem(path, Path.GetFileName(path)));
     }
 
     public override ICommand PrimaryCommand => ConvertCommand;
@@ -32,7 +50,6 @@ public sealed class ConvertViewModel : WorkspaceBase
     public RelayCommand ChooseFolderCommand { get; }
     public RelayCommand ChooseOutputCommand { get; }
     public AsyncRelayCommand ConvertCommand { get; }
-    public string SourcePath { get => sourcePath; set { if (Set(ref sourcePath, value)) ConvertCommand.RaiseCanExecuteChanged(); } }
     public string OutputFolder { get => outputFolder; set => Set(ref outputFolder, value); }
     public string Suffix { get => suffix; set => Set(ref suffix, value); }
     public AudioFormat SelectedFormat { get => selectedFormat; set { if (Set(ref selectedFormat, value)) { Raise(nameof(IsLossyFormat)); Raise(nameof(IsLosslessFormat)); } } }
@@ -66,7 +83,7 @@ public sealed class ConvertViewModel : WorkspaceBase
 
     public override Task AcceptDropAsync(IReadOnlyList<string> paths)
     {
-        if (paths.FirstOrDefault(item => File.Exists(item) || Directory.Exists(item)) is { } path) SourcePath = path;
+        AddSources(paths);
         return Task.CompletedTask;
     }
 
@@ -82,27 +99,39 @@ public sealed class ConvertViewModel : WorkspaceBase
             var configuredSuffix = Suffix;
             var options = CreateOptions(format);
             Report = "Conversion started.";
-            var files = EnumerateSources(SourcePath).ToArray();
-            if (files.Length == 0) throw new InvalidDataException("No supported audio file was found.");
+            var items = Queue.ToArray();
+            foreach (var item in items) item.Update(QueueState.Waiting, "Waiting");
             var results = new List<FileResult>();
-            for (var index = 0; index < files.Length; index++)
+            for (var index = 0; index < items.Length; index++)
             {
-                var file = files[index];
+                var item = items[index];
+                var file = item.Path;
                 try
                 {
+                    item.Update(QueueState.Running, "Converting…");
                     _ = AudioFormats.FromPath(file);
                     var info = await Host.Probe!.ProbeAsync(file, ActiveOperationToken);
                     var directory = ResolveOutputDirectory(file, configuredOutput);
                     Directory.CreateDirectory(directory);
                     var output = OutputPathBuilder.Build(file, directory, format, configuredSuffix);
-                    var itemProgress = new Progress<double>(fraction => UpdateOperationProgress((index + fraction) / files.Length, $"Converting {index + 1}/{files.Length}: {Path.GetFileName(file)}"));
+                    var itemProgress = new Progress<double>(fraction =>
+                    {
+                        item.Update(QueueState.Running, $"Converting {fraction:P0}", fraction * 100);
+                        UpdateOperationProgress((index + fraction) / items.Length, $"Converting {index + 1}/{items.Length}: {item.Name}");
+                    });
                     await Host.Audio!.ConvertAsync(file, output, options, info.DurationSeconds, itemProgress, ActiveOperationToken);
                     results.Add(new FileResult(file, output, null));
+                    item.Update(QueueState.Done, "Done", 100);
                     Host.AppendOperationReport($"OK  {file} -> {output}");
                     Host.SetLastOutputFolder(this, directory);
                 }
-                catch (OperationCanceledException) { throw; }
-                catch (Exception error) { results.Add(new FileResult(file, null, error.Message)); Host.AppendOperationReport($"FAIL  {file}: {error.Message}"); }
+                catch (OperationCanceledException) { item.Update(QueueState.Waiting, "Cancelled"); throw; }
+                catch (Exception error)
+                {
+                    results.Add(new FileResult(file, null, error.Message));
+                    item.Update(QueueState.Failed, "Failed");
+                    Host.AppendOperationReport($"FAIL  {file}: {error.Message}");
+                }
             }
             var batch = new BatchResult(results);
             Report = $"Completed: {batch.Succeeded} succeeded, {batch.Failed} failed\n" + string.Join('\n', results.Select(result => result.Succeeded ? $"OK  {Path.GetFileName(result.InputPath)} -> {result.OutputPath}" : $"FAIL  {Path.GetFileName(result.InputPath)}: {result.Error}"));
@@ -120,5 +149,9 @@ public sealed class ConvertViewModel : WorkspaceBase
         Overwrite);
 
     private static string ResolveOutputDirectory(string source, string configured) => string.IsNullOrWhiteSpace(configured) ? Path.Combine(Path.GetDirectoryName(source)!, "converted") : configured;
-    private static IEnumerable<string> EnumerateSources(string source) => File.Exists(source) ? [source] : Directory.Exists(source) ? Directory.EnumerateFiles(source).Where(path => { try { _ = AudioFormats.FromPath(path); return true; } catch { return false; } }) : [];
+    private static IEnumerable<string> EnumerateSources(string source)
+    {
+        IEnumerable<string> candidates = File.Exists(source) ? [source] : Directory.Exists(source) ? Directory.EnumerateFiles(source) : [];
+        return candidates.Where(path => { try { _ = AudioFormats.FromPath(path); return true; } catch (ArgumentException) { return false; } });
+    }
 }

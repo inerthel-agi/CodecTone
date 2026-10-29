@@ -240,4 +240,22 @@
         </StackPanel>
     </DataTemplate>
     <Style x:Key="TransportButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}"><Setter Property="Margin" Value="0,0,8,0" /><Setter Property="Padding" Value="14,8" /></Style>
+    <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibility" />
+    <!-- Batch queues: a virtualized list of file rows with a status line and a progress bar while running. -->
+    <Style x:Key="QueueList" TargetType="ItemsControl">
+        <Setter Property="MaxHeight" Value="340" /><Setter Property="Focusable" Value="False" /><Setter Property="VirtualizingStackPanel.IsVirtualizing" Value="True" /><Setter Property="ScrollViewer.CanContentScroll" Value="True" />
+        <Setter Property="ItemsPanel"><Setter.Value><ItemsPanelTemplate><VirtualizingStackPanel /></ItemsPanelTemplate></Setter.Value></Setter>
+        <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ItemsControl"><ScrollViewer VerticalScrollBarVisibility="Auto" CanContentScroll="True" Focusable="False"><ItemsPresenter /></ScrollViewer></ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style x:Key="QueueRow" TargetType="Border" BasedOn="{StaticResource FileCard}"><Setter Property="Padding" Value="12,8" /><Setter Property="Margin" Value="0,0,0,6" /></Style>
+    <DataTemplate x:Key="QueueStatus">
+        <StackPanel VerticalAlignment="Center">
+            <TextBlock x:Name="StatusText" Style="{StaticResource Caption}" Text="{Binding Status}" HorizontalAlignment="Right" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
+            <ProgressBar Value="{Binding Progress, Mode=OneWay}" Maximum="100" Margin="0,5,0,0" Visibility="{Binding IsRunning, Converter={StaticResource BooleanToVisibility}}" />
+        </StackPanel>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding State}" Value="Done"><Setter TargetName="StatusText" Property="Foreground" Value="{DynamicResource AccentBrush}" /></DataTrigger>
+            <DataTrigger Binding="{Binding State}" Value="Failed"><Setter TargetName="StatusText" Property="Foreground" Value="{DynamicResource DangerBrush}" /></DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
 </ResourceDictionary>

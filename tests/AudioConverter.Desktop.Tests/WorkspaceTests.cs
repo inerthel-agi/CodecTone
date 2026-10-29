@@ -133,6 +133,29 @@ public sealed class WorkspaceTests
     }
 
     [TestMethod]
+    public async Task ConvertQueue_AddsSupportedFilesOnce()
+    {
+        var folder = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"codectone-add-{Guid.NewGuid():N}");
+        System.IO.Directory.CreateDirectory(System.IO.Path.Combine(folder, "sub"));
+        foreach (var name in new[] { "a.flac", "b.MP3", "notes.txt", @"sub\c.wav" })
+            System.IO.File.WriteAllBytes(System.IO.Path.Combine(folder, name), []);
+        try
+        {
+            await OnSta(async () =>
+            {
+                using var vm = new MainViewModel(new TestDialogs());
+                vm.Convert.AddSources([folder, System.IO.Path.Combine(folder, "a.flac"), System.IO.Path.Combine(folder, "notes.txt")]);
+                CollectionAssert.AreEqual(new[] { "a.flac", "b.MP3" }, vm.Convert.Queue.Select(item => item.Name).ToArray());
+                Assert.IsTrue(vm.Convert.ConvertCommand.CanExecute(null));
+                vm.Convert.RemoveQueueItemCommand.Execute(vm.Convert.Queue[0]);
+                Assert.AreEqual("1 file", vm.Convert.QueueSummary);
+                await vm.ShutdownAsync();
+            });
+        }
+        finally { System.IO.Directory.Delete(folder, true); }
+    }
+
+    [TestMethod]
     public void ThemeCycle_VisitsEveryThemeAndRecoversUnknownValues()
     {
         Assert.AreEqual("White", ThemeService.Next("oled"));
@@ -159,6 +182,10 @@ public sealed class WorkspaceTests
     [TestMethod]
     public async Task WorkspaceLayouts_RenderBothThemesAtMinimumSize()
     {
+        var sampleFolder = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"codectone-queue-{Guid.NewGuid():N}");
+        System.IO.Directory.CreateDirectory(sampleFolder);
+        foreach (var name in new[] { "01 Intro.flac", "02 A much longer track name that should be trimmed nicely.mp3" })
+            System.IO.File.WriteAllBytes(System.IO.Path.Combine(sampleFolder, name), []);
         var bindingErrors = new BindingErrorListener();
         System.Diagnostics.PresentationTraceSources.Refresh();
         System.Diagnostics.PresentationTraceSources.DataBindingSource.Listeners.Add(bindingErrors);
@@ -179,6 +206,19 @@ public sealed class WorkspaceTests
                 ThemeService.DisableMotion(application.Resources);
                 using var vm = new MainViewModel(new TestDialogs());
                 vm.Tools.Append(vm.AboutItem).Single(item => item.Label == workspace).ShowCommand.Execute(null);
+                if (workspace == "Convert")
+                {
+                    vm.Convert.AddSources([sampleFolder]);
+                    vm.Convert.Queue[0].Update(QueueState.Running, "Converting 42%", 42);
+                    vm.Convert.Queue[1].Update(QueueState.Failed, "Failed");
+                }
+                if (workspace == "Compress")
+                {
+                    vm.Compress.PlannedFiles.Add(new QueueItem(@"C:\Music\a.flac", @"Album\a.flac"));
+                    var skipped = new QueueItem(@"C:\Music\b.mp3", @"Album\b.mp3") { Included = false };
+                    skipped.Update(QueueState.Skipped, "Skip: already small");
+                    vm.Compress.PlannedFiles.Add(skipped);
+                }
                 if (workspace == "Remix")
                 {
                     vm.Remix.AddRemixEffectCommand.Execute(null);
@@ -205,6 +245,7 @@ public sealed class WorkspaceTests
             application.Shutdown();
         });
         System.Diagnostics.PresentationTraceSources.DataBindingSource.Listeners.Remove(bindingErrors);
+        System.IO.Directory.Delete(sampleFolder, true);
         Assert.AreEqual(0, bindingErrors.Errors.Count, string.Join("\n", bindingErrors.Errors.Distinct()));
     }
 

@@ -34,6 +34,22 @@
                     <Button Grid.Column="3" Content="Analyze" Command="{Binding AnalyzeCompressionCommand}" VerticalAlignment="Bottom" Margin="14,0,0,0" />
                 </Grid>
                 <Border Style="{StaticResource InfoBox}" Margin="0,18,0,0"><TextBlock Text="{Binding CompressionEstimate}" TextWrapping="Wrap" /></Border>
+                <StackPanel Visibility="{Binding HasPlannedFiles, Converter={StaticResource BooleanToVisibility}}" Margin="0,14,0,0">
+                    <TextBlock Style="{StaticResource Caption}" Text="Switch a file off to leave it out of this compression." Margin="2,0,0,8" />
+                    <ItemsControl ItemsSource="{Binding PlannedFiles}" Style="{StaticResource QueueList}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource QueueRow}">
+                                    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="170" /></Grid.ColumnDefinitions>
+                                        <CheckBox IsChecked="{Binding Included}" IsEnabled="{Binding CanToggle}" Margin="0,0,4,0" AutomationProperties.Name="{Binding Name}" ToolTip="Include this file" />
+                                        <TextBlock Grid.Column="1" Style="{StaticResource FileName}" Text="{Binding Name}" VerticalAlignment="Center" />
+                                        <ContentControl Grid.Column="2" Content="{Binding}" ContentTemplate="{StaticResource QueueStatus}" Focusable="False" Margin="12,0,0,0" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
                 <Separator Style="{StaticResource Rule}" />
 
                 <TextBlock Style="{StaticResource SectionLabel}" Text="Destination" />

@@ -8,22 +8,34 @@
         <Border Style="{StaticResource Card}">
             <StackPanel>
                 <TextBlock Style="{StaticResource SectionLabel}" Text="Source" />
-                <ContentControl Style="{StaticResource DropZone}" Visibility="{Binding SourcePath, Converter={StaticResource EmptyToVisibility}}">
+                <ContentControl Style="{StaticResource DropZone}" Visibility="{Binding HasQueue, Converter={StaticResource InverseBooleanToVisibility}}">
                     <StackPanel>
                         <TextBlock Style="{StaticResource DropGlyph}" />
-                        <TextBlock Style="{StaticResource DropTitle}" Text="Drop an audio file or a folder here" />
-                        <TextBlock Style="{StaticResource Caption}" Text="Folders are converted without their subfolders." HorizontalAlignment="Center" />
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,14,0,0"><Button Content="Choose file" Command="{Binding ChooseFileCommand}" Margin="0,0,8,0" /><Button Content="Choose folder" Command="{Binding ChooseFolderCommand}" /></StackPanel>
+                        <TextBlock Style="{StaticResource DropTitle}" Text="Drop audio files or folders here" />
+                        <TextBlock Style="{StaticResource Caption}" Text="Folders add their files without subfolders." HorizontalAlignment="Center" />
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,14,0,0"><Button Content="Choose files" Command="{Binding ChooseFileCommand}" Margin="0,0,8,0" /><Button Content="Choose folder" Command="{Binding ChooseFolderCommand}" /></StackPanel>
                     </StackPanel>
                 </ContentControl>
-                <Border Style="{StaticResource FileCard}" Visibility="{Binding SourcePath, Converter={StaticResource EmptyToVisibility}, ConverterParameter=Invert}">
-                    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                        <TextBlock Style="{StaticResource FileGlyph}" Text="{Binding SourcePath, Converter={StaticResource PathPart}, ConverterParameter=Glyph}" />
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center"><TextBlock Style="{StaticResource FileName}" Text="{Binding SourcePath, Converter={StaticResource PathPart}}" /><TextBlock Style="{StaticResource FilePath}" Text="{Binding SourcePath, Converter={StaticResource PathPart}, ConverterParameter=Parent}" /></StackPanel>
-                        <Button Grid.Column="2" Content="Change file" Command="{Binding ChooseFileCommand}" Margin="12,0,8,0" />
-                        <Button Grid.Column="3" Content="Change folder" Command="{Binding ChooseFolderCommand}" />
-                    </Grid>
-                </Border>
+                <StackPanel Visibility="{Binding HasQueue, Converter={StaticResource BooleanToVisibility}}">
+                    <DockPanel Margin="0,0,0,8">
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal"><Button Content="Add files" Command="{Binding ChooseFileCommand}" Margin="0,0,8,0" /><Button Content="Add folder" Command="{Binding ChooseFolderCommand}" Margin="0,0,8,0" /><Button Content="Clear" Command="{Binding ClearQueueCommand}" /></StackPanel>
+                        <TextBlock Style="{StaticResource Caption}" Text="{Binding QueueSummary}" VerticalAlignment="Center" />
+                    </DockPanel>
+                    <ItemsControl ItemsSource="{Binding Queue}" Style="{StaticResource QueueList}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource QueueRow}">
+                                    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="150" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                                        <TextBlock Style="{StaticResource FileGlyph}" FontSize="16" Text="{StaticResource GlyphAudio}" Margin="0,0,12,0" />
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center"><TextBlock Style="{StaticResource FileName}" Text="{Binding Name}" /><TextBlock Style="{StaticResource FilePath}" Text="{Binding Folder}" /></StackPanel>
+                                        <ContentControl Grid.Column="2" Content="{Binding}" ContentTemplate="{StaticResource QueueStatus}" Focusable="False" Margin="12,0" />
+                                        <Button Grid.Column="3" Style="{StaticResource IconButton}" Content="{StaticResource GlyphRemove}" ToolTip="Remove from the queue" AutomationProperties.Name="Remove from the queue" Command="{Binding DataContext.RemoveQueueItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
                 <Separator Style="{StaticResource Rule}" />
 
                 <TextBlock Style="{StaticResource SectionLabel}" Text="Output format" />

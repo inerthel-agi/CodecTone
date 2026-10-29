@@ -26,10 +26,11 @@
                 <Separator Style="{StaticResource Rule}" />
 
                 <TextBlock Style="{StaticResource SectionLabel}" Text="Selection" />
-                <controls:WaveformControl Peaks="{Binding WaveformPeaks}" Duration="{Binding DurationSeconds}" Start="{Binding StartSeconds}" End="{Binding EndSeconds}" Playhead="{Binding CutPlayheadSeconds}" Height="240" AutomationProperties.Name="Cut selection waveform" />
+                <controls:WaveformControl Peaks="{Binding WaveformPeaks}" Duration="{Binding DurationSeconds}" Start="{Binding StartSeconds}" End="{Binding EndSeconds}" Playhead="{Binding CutPlayheadSeconds}" SeekCommand="{Binding Host.SeekPreviewCommand}" Height="240" AutomationProperties.Name="Cut selection waveform" />
                 <DockPanel Margin="0,10,0,16">
                     <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
                         <Button Style="{StaticResource TransportButton}" Command="{Binding PreviewCommand}" AutomationProperties.Name="Preview cut"><StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource Icon}" Text="{StaticResource GlyphPlay}" FontSize="12" Margin="0,0,8,0" /><TextBlock Text="Preview cut" /></StackPanel></Button>
+                        <Button Style="{StaticResource TransportButton}" Command="{Binding Host.PausePreviewCommand}" Content="{Binding Host.PauseLabel}" />
                         <Button Style="{StaticResource TransportButton}" Command="{Binding StopPreviewCommand}" AutomationProperties.Name="Stop preview"><StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource Icon}" Text="{StaticResource GlyphStop}" FontSize="12" Margin="0,0,8,0" /><TextBlock Text="Stop" /></StackPanel></Button>
                     </StackPanel>
                     <TextBlock Style="{StaticResource Caption}" Text="Drag a handle, or focus the waveform and use the arrow keys (Shift for 1 s, [ and ] to pick a handle)." VerticalAlignment="Center" Margin="8,0,0,0" />

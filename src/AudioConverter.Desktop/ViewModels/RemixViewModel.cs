@@ -14,7 +14,6 @@ public sealed class RemixViewModel : WorkspaceBase
     private readonly HashSet<Task> analysisTasks = [];
     private CancellationTokenSource? remixAnalysisCancellation;
     private AudioAnalysis? remixAnalysis;
-    private double previewVolume = 25;
     private string remixSourcePath = "";
     private string remixSourceDetails = "";
     private double remixDurationSeconds;
@@ -67,7 +66,7 @@ public sealed class RemixViewModel : WorkspaceBase
         RemoveMetadataTagCommand = new RelayCommand<MetadataTagViewModel>(tag => RemixCustomTags.Remove(tag));
         PreviewRemixCommand = new AsyncRelayCommand(() => PreviewRemixAsync(), () => !Host.IsBusy && RemixDurationSeconds > 0);
         PreviewOriginalCommand = new AsyncRelayCommand(() => PreviewRemixAsync(true), () => !Host.IsBusy && RemixDurationSeconds > 0);
-        StopRemixCommand = new RelayCommand(() => { Host.CancelActiveOperation(); Host.PreviewPlayer.Stop(); Host.StopPlayhead(); Host.Status = "Remix preview stopped."; });
+        StopRemixCommand = new RelayCommand(() => { Host.CancelActiveOperation(); Host.StopPreview(); Host.Status = "Remix preview stopped."; });
         ExportRemixCommand = new AsyncRelayCommand(ExportRemixAsync, () => !Host.IsBusy && RemixDurationSeconds > 0);
     }
 
@@ -150,7 +149,8 @@ public sealed class RemixViewModel : WorkspaceBase
     public double RemixPreviewStartSeconds { get => remixPreviewStartSeconds; set { if (Set(ref remixPreviewStartSeconds, Math.Clamp(value, 0, Math.Max(0, RemixDurationSeconds - 1)))) Raise(nameof(RemixPreviewEndSeconds)); } }
     public double RemixPreviewEndSeconds { get => Math.Min(RemixDurationSeconds, RemixPreviewStartSeconds + 20); set => RemixPreviewStartSeconds = Math.Max(0, value - 20); }
     public double RemixPlayheadSeconds { get => remixPlayheadSeconds; private set => Set(ref remixPlayheadSeconds, value); }
-    public double PreviewVolume { get => previewVolume; set { if (double.IsFinite(value)) Set(ref previewVolume, Math.Clamp(value, 0, 100)); } }
+    /// <summary>Forwards to the shared preview volume, which applies live and never to exports.</summary>
+    public double PreviewVolume { get => Host.PreviewVolume; set { Host.PreviewVolume = value; Raise(); } }
     public AudioFormat RemixFormat { get => remixFormat; set { if (Set(ref remixFormat, value)) { Raise(nameof(IsRemixLossy)); Raise(nameof(IsRemixLossless)); } } }
     public bool IsRemixLossy => RemixFormat.IsLossy();
     public bool IsRemixLossless => !IsRemixLossy;
@@ -335,12 +335,10 @@ public sealed class RemixViewModel : WorkspaceBase
             Host.EnsureFfmpeg();
             var rack = original ? Array.Empty<RemixEffect>() : BuildRemixRack();
             RemixRackValidator.Validate(rack, RemixDurationSeconds);
-            Host.PreviewPlayer.Stop();
-            Host.StopPlayhead();
+            Host.StopPreview();
             var progress = new Progress<double>(fraction => UpdateOperationProgress(fraction, "Rendering 20-second remix preview…"));
-            var output = await Host.Remix!.RenderPreviewAsync(RemixSourcePath, rack, remixSampleRate, RemixDurationSeconds, RemixPreviewStartSeconds, progress, ActiveOperationToken, previewGain: PreviewVolume / 100);
-            Host.PreviewPlayer.Play(output);
-            Host.StartPlayhead(position => RemixPlayheadSeconds = position, RemixPreviewStartSeconds, RemixPreviewEndSeconds - RemixPreviewStartSeconds, TempoRate(rack));
+            var output = await Host.Remix!.RenderPreviewAsync(RemixSourcePath, rack, remixSampleRate, RemixDurationSeconds, RemixPreviewStartSeconds, progress, ActiveOperationToken);
+            Host.PlayPreview(output, position => RemixPlayheadSeconds = position, RemixPreviewStartSeconds, RemixPreviewEndSeconds - RemixPreviewStartSeconds, TempoRate(rack));
             UpdateOperationProgress(1, original ? "Playing original excerpt." : "Playing remix excerpt.");
         });
     }

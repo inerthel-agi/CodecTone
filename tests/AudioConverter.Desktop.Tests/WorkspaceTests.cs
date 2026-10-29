@@ -90,6 +90,49 @@ public sealed class WorkspaceTests
     }
 
     [TestMethod]
+    public async Task PreviewPlayer_ReportsPositionAndReleasesFileOnStop()
+    {
+        var path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"codectone-tone-{Guid.NewGuid():N}.wav");
+        WriteTone(path, seconds: 2);
+        try
+        {
+            await OnSta(async () =>
+            {
+                using var player = new AudioPreviewPlayer { Volume = 0 };
+                try { player.Play(path); }
+                catch (InvalidOperationException error) { Assert.Inconclusive(error.Message); }
+                for (var wait = 0; wait < 30 && player.Position == TimeSpan.Zero; wait++)
+                    await Task.Delay(50);
+                Assert.IsTrue(player.IsPlaying);
+                Assert.IsTrue(player.Position > TimeSpan.Zero, "Position should advance during playback.");
+                player.TogglePause();
+                Assert.IsTrue(player.IsPaused);
+                player.Position = TimeSpan.FromSeconds(1.5);
+                Assert.IsTrue(player.Position >= TimeSpan.FromSeconds(1.4), "Seeking should move the reported position.");
+                player.TogglePause();
+                var ended = false;
+                player.Ended += () => ended = true;
+                for (var wait = 0; wait < 40 && !ended; wait++) { await Task.Delay(50); player.Poll(); }
+                Assert.IsTrue(ended, "The end of playback should be detected.");
+                Assert.IsFalse(player.IsPlaying);
+                System.IO.File.Delete(path);
+            });
+        }
+        finally { if (System.IO.File.Exists(path)) System.IO.File.Delete(path); }
+    }
+
+    private static void WriteTone(string path, int seconds)
+    {
+        const int rate = 22_050;
+        using var writer = new System.IO.BinaryWriter(System.IO.File.Create(path));
+        var samples = rate * seconds;
+        writer.Write("RIFF"u8); writer.Write(36 + samples * 2); writer.Write("WAVEfmt "u8); writer.Write(16);
+        writer.Write((short)1); writer.Write((short)1); writer.Write(rate); writer.Write(rate * 2); writer.Write((short)2); writer.Write((short)16);
+        writer.Write("data"u8); writer.Write(samples * 2);
+        for (var i = 0; i < samples; i++) writer.Write((short)(Math.Sin(i * 2 * Math.PI * 440 / rate) * 8000));
+    }
+
+    [TestMethod]
     public void ThemeCycle_VisitsEveryThemeAndRecoversUnknownValues()
     {
         Assert.AreEqual("White", ThemeService.Next("oled"));

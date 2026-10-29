@@ -32,7 +32,7 @@ public sealed class CutViewModel : WorkspaceBase
         ChooseCutOutputCommand = new RelayCommand(() => CutOutputFolder = Dialogs.ChooseFolder(CutOutputFolder) ?? CutOutputFolder);
         CutCommand = new AsyncRelayCommand(CutAsync, () => !Host.IsBusy && DurationSeconds > 0);
         PreviewCommand = new AsyncRelayCommand(PreviewAsync, () => !Host.IsBusy && DurationSeconds > 0);
-        StopPreviewCommand = new RelayCommand(() => { Host.CancelActiveOperation(); Host.PreviewPlayer.Stop(); Host.StopPlayhead(); Host.Status = "Preview stopped."; });
+        StopPreviewCommand = new RelayCommand(() => { Host.CancelActiveOperation(); Host.StopPreview(); Host.Status = "Preview stopped."; });
     }
 
     public override ICommand PrimaryCommand => CutCommand;
@@ -100,12 +100,11 @@ public sealed class CutViewModel : WorkspaceBase
     {
         await RunBusyAsync(async () =>
         {
-            Host.EnsureFfmpeg(); Host.PreviewPlayer.Stop(); Host.StopPlayhead(); var output = AppPaths.PreviewWave;
+            Host.EnsureFfmpeg(); Host.StopPreview(); var output = AppPaths.PreviewWave;
             Host.Status = "Rendering local preview…";
             var previewProgress = new Progress<double>(fraction => UpdateOperationProgress(fraction, "Rendering local preview…"));
             await Host.Audio!.RenderPreviewAsync(CutSourcePath, output, CreateTrim(), previewProgress, ActiveOperationToken);
-            Host.PreviewPlayer.Play(output);
-            Host.StartPlayhead(position => CutPlayheadSeconds = position, StartSeconds, SelectionDuration, 1);
+            Host.PlayPreview(output, position => CutPlayheadSeconds = position, StartSeconds, SelectionDuration, 1);
             UpdateOperationProgress(1, "Playing cut preview.");
         });
     }

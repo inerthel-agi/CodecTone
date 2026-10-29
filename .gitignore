@@ -29,3 +29,6 @@ ffmpeg_installer.py
 ui_theme.py
 windows_drop.py
 tests/test_audio_converter.py
+
+# Claude Code agent worktrees
+.claude/worktrees/

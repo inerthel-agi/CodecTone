@@ -9,6 +9,8 @@
         xmlns:views="clr-namespace:AudioConverter.Desktop.Views"
         mc:Ignorable="d" Title="CodecTone" Width="1180" Height="820" MinWidth="900" MinHeight="650"
         Icon="Assets/audio-converter-logo.png" AllowDrop="True" Drop="OnDrop" DragOver="OnDragOver" DragLeave="OnDragLeave" Closing="OnClosing">
+    <!-- Taskbar button fills while an operation runs and turns red after a failure. -->
+    <Window.TaskbarItemInfo><TaskbarItemInfo ProgressValue="{Binding Host.TaskbarProgress, Mode=OneWay}" ProgressState="{Binding Host.TaskbarState, Mode=OneWay}" /></Window.TaskbarItemInfo>
     <Window.Resources>
         <Style x:Key="HiddenWhenBusy" TargetType="FrameworkElement"><Style.Triggers><DataTrigger Binding="{Binding Host.IsBusy}" Value="True"><Setter Property="Visibility" Value="Collapsed" /></DataTrigger></Style.Triggers></Style>
         <DataTemplate DataType="{x:Type vm:ConvertViewModel}"><views:ConvertView /></DataTemplate>

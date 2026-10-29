@@ -28,6 +28,8 @@ public sealed class WaveformControl : FrameworkElement
         nameof(End), typeof(double), typeof(WaveformControl), new FrameworkPropertyMetadata(0d, FrameworkPropertyMetadataOptions.AffectsRender | FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
     public static readonly DependencyProperty PlayheadProperty = DependencyProperty.Register(
         nameof(Playhead), typeof(double), typeof(WaveformControl), new FrameworkPropertyMetadata(double.NaN, FrameworkPropertyMetadataOptions.AffectsRender));
+    public static readonly DependencyProperty SeekCommandProperty = DependencyProperty.Register(
+        nameof(SeekCommand), typeof(ICommand), typeof(WaveformControl));
 
     public double[] Peaks { get => (double[])GetValue(PeaksProperty); set => SetValue(PeaksProperty, value); }
     public double Duration { get => (double)GetValue(DurationProperty); set => SetValue(DurationProperty, value); }
@@ -35,6 +37,8 @@ public sealed class WaveformControl : FrameworkElement
     public double End { get => (double)GetValue(EndProperty); set => SetValue(EndProperty, value); }
     /// <summary>Playback position in source seconds; NaN hides it.</summary>
     public double Playhead { get => (double)GetValue(PlayheadProperty); set => SetValue(PlayheadProperty, value); }
+    /// <summary>Executed with the source time in seconds when the ruler is clicked during playback.</summary>
+    public ICommand? SeekCommand { get => (ICommand?)GetValue(SeekCommandProperty); set => SetValue(SeekCommandProperty, value); }
 
     public WaveformControl() { MinHeight = 160; Cursor = Cursors.SizeWE; Focusable = true; }
 
@@ -143,7 +147,12 @@ public sealed class WaveformControl : FrameworkElement
     protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
     {
         if (Duration <= 0) return;
-        Focus(); CaptureMouse(); var x = e.GetPosition(this).X;
+        var point = e.GetPosition(this);
+        if (point.Y <= RulerHeight && SeekCommand is { } seek && seek.CanExecute(ToTime(point.X)))
+        {
+            seek.Execute(ToTime(point.X)); e.Handled = true; return;
+        }
+        Focus(); CaptureMouse(); var x = point.X;
         dragging = Math.Abs(x - ToX(Start)) <= Math.Abs(x - ToX(End)) ? DragHandle.Start : DragHandle.End;
         active = dragging;
         MoveHandle(dragging, ToTime(x)); e.Handled = true;
@@ -153,7 +162,8 @@ public sealed class WaveformControl : FrameworkElement
     {
         var x = e.GetPosition(this).X;
         if (dragging != DragHandle.None) MoveHandle(dragging, ToTime(x));
-        else if (Duration > 0) Cursor = Math.Min(Math.Abs(x - ToX(Start)), Math.Abs(x - ToX(End))) <= HandleHitWidth ? Cursors.SizeWE : Cursors.Hand;
+        else if (Duration > 0) Cursor = e.GetPosition(this).Y <= RulerHeight && SeekCommand?.CanExecute(ToTime(x)) == true ? Cursors.Hand
+            : Math.Min(Math.Abs(x - ToX(Start)), Math.Abs(x - ToX(End))) <= HandleHitWidth ? Cursors.SizeWE : Cursors.Arrow;
     }
 
     protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e) { dragging = DragHandle.None; ReleaseMouseCapture(); e.Handled = true; }

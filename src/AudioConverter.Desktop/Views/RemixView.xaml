@@ -26,9 +26,9 @@
                 <Separator Style="{StaticResource Rule}" />
 
                 <TextBlock Style="{StaticResource SectionLabel}" Text="Preview window · 20 seconds" />
-                <controls:WaveformControl Peaks="{Binding RemixWaveformPeaks}" Duration="{Binding RemixDurationSeconds}" Start="{Binding RemixPreviewStartSeconds}" End="{Binding RemixPreviewEndSeconds}" Playhead="{Binding RemixPlayheadSeconds}" Height="190" AutomationProperties.Name="Remix preview window" />
+                <controls:WaveformControl Peaks="{Binding RemixWaveformPeaks}" Duration="{Binding RemixDurationSeconds}" Start="{Binding RemixPreviewStartSeconds}" End="{Binding RemixPreviewEndSeconds}" Playhead="{Binding RemixPlayheadSeconds}" SeekCommand="{Binding Host.SeekPreviewCommand}" Height="190" AutomationProperties.Name="Remix preview window" />
                 <DockPanel Margin="0,10,0,0">
-                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" ToolTip="Applies on the next playback. Does not affect exports.">
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" ToolTip="Applies right away. Does not affect exports.">
                         <TextBlock Style="{StaticResource Caption}" Text="Volume" VerticalAlignment="Center" Margin="0,0,10,0" />
                         <Slider Minimum="0" Maximum="100" Value="{Binding PreviewVolume}" Width="110" VerticalAlignment="Center" AutomationProperties.Name="Preview volume" />
                         <TextBlock Text="{Binding PreviewVolume, StringFormat={}{0:0}%}" Width="38" TextAlignment="Right" VerticalAlignment="Center" />
@@ -36,6 +36,7 @@
                     <WrapPanel>
                         <Button Style="{StaticResource TransportButton}" Command="{Binding PreviewOriginalCommand}" AutomationProperties.Name="Play original"><StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource Icon}" Text="{StaticResource GlyphPlay}" FontSize="12" Margin="0,0,8,0" /><TextBlock Text="Original" /></StackPanel></Button>
                         <Button Style="{StaticResource TransportButton}" Command="{Binding PreviewRemixCommand}" AutomationProperties.Name="Play remix"><StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource Icon}" Text="{StaticResource GlyphPlay}" FontSize="12" Margin="0,0,8,0" /><TextBlock Text="Remix" /></StackPanel></Button>
+                        <Button Style="{StaticResource TransportButton}" Command="{Binding Host.PausePreviewCommand}" Content="{Binding Host.PauseLabel}" />
                         <Button Style="{StaticResource TransportButton}" Command="{Binding StopRemixCommand}" AutomationProperties.Name="Stop preview"><StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource Icon}" Text="{StaticResource GlyphStop}" FontSize="12" Margin="0,0,8,0" /><TextBlock Text="Stop" /></StackPanel></Button>
                     </WrapPanel>
                 </DockPanel>

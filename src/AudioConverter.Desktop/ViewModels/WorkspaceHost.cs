@@ -6,7 +6,6 @@ using AudioConverter.Core.Progress;
 using AudioConverter.Desktop.Mvvm;
 using AudioConverter.Desktop.Services;
 using AudioConverter.Infrastructure.Artwork;
-using AudioConverter.Infrastructure.Audio;
 using AudioConverter.Infrastructure.Ffmpeg;
 using AudioConverter.Infrastructure.Remix;
 using AudioConverter.Infrastructure.Storage;
@@ -21,7 +20,6 @@ public sealed class WorkspaceHost : ObservableObject, IDisposable
 {
     private readonly JsonSettingsStore settingsStore = new();
     private readonly Stopwatch operationTimer = new();
-    private readonly Stopwatch playheadClock = new();
     private TaskCompletionSource? operationFinished;
     private CancellationTokenSource? activeOperationCancellation;
     private WorkspaceBase? operationWorkspace;
@@ -33,6 +31,7 @@ public sealed class WorkspaceHost : ObservableObject, IDisposable
     private bool isBusy;
     private bool closing;
     private bool ffmpegMissing;
+    private bool lastOperationFailed;
     private double progress;
     private string status = "Ready";
     private string timingText = "";
@@ -43,11 +42,28 @@ public sealed class WorkspaceHost : ObservableObject, IDisposable
         Dialogs = dialogs;
         InstallFfmpegCommand = new AsyncRelayCommand(InstallFfmpegAsync, () => !IsBusy);
         CancelOperationCommand = new RelayCommand(CancelActiveOperation);
+        PausePreviewCommand = new RelayCommand(() => { PreviewPlayer.TogglePause(); RaisePreviewState(); }, () => PreviewPlayer.IsPlaying);
+        SeekPreviewCommand = new RelayCommand<double>(SeekPreview, _ => PreviewPlayer.IsPlaying);
+        PreviewPlayer.Ended += StopPlayhead;
     }
 
     public IDialogService Dialogs { get; }
     public LocalDiagnosticLog Log { get; } = new();
-    public WavePreviewPlayer PreviewPlayer { get; } = new();
+    public AudioPreviewPlayer PreviewPlayer { get; } = new();
+    public RelayCommand PausePreviewCommand { get; }
+    /// <summary>Seeks the playing preview to a source time in seconds (from a click on the waveform ruler).</summary>
+    public RelayCommand<double> SeekPreviewCommand { get; }
+    public string PauseLabel => PreviewPlayer.IsPaused ? "Resume" : "Pause";
+    /// <summary>Preview loudness from 0 to 100; applies to the playing preview immediately and never to exports.</summary>
+    public double PreviewVolume
+    {
+        get => PreviewPlayer.Volume * 100;
+        set { if (!double.IsFinite(value)) return; PreviewPlayer.Volume = Math.Clamp(value, 0, 100) / 100; Raise(); }
+    }
+    public double TaskbarProgress => Progress / 100;
+    public System.Windows.Shell.TaskbarItemProgressState TaskbarState => IsBusy
+        ? System.Windows.Shell.TaskbarItemProgressState.Normal
+        : lastOperationFailed ? System.Windows.Shell.TaskbarItemProgressState.Error : System.Windows.Shell.TaskbarItemProgressState.None;
     public AppSettings Settings { get; private set; } = new();
     public FfmpegTools? Tools { get; private set; }
     public AudioProcessingService? Audio { get; private set; }
@@ -61,11 +77,11 @@ public sealed class WorkspaceHost : ObservableObject, IDisposable
     /// <summary>Raised when busy or closing changes so workspaces can refresh their commands.</summary>
     public event Action? StateChanged;
 
-    public bool IsBusy { get => isBusy; private set { if (Set(ref isBusy, value)) { Raise(nameof(IsWorkspaceEnabled)); InstallFfmpegCommand.RaiseCanExecuteChanged(); StateChanged?.Invoke(); } } }
+    public bool IsBusy { get => isBusy; private set { if (Set(ref isBusy, value)) { Raise(nameof(IsWorkspaceEnabled)); Raise(nameof(TaskbarState)); InstallFfmpegCommand.RaiseCanExecuteChanged(); StateChanged?.Invoke(); } } }
     public bool IsClosing => closing;
     public bool IsWorkspaceEnabled => !IsBusy && !closing;
     public bool FfmpegMissing { get => ffmpegMissing; private set => Set(ref ffmpegMissing, value); }
-    public double Progress { get => progress; private set => Set(ref progress, value); }
+    public double Progress { get => progress; private set { if (Set(ref progress, value)) Raise(nameof(TaskbarProgress)); } }
     public string Status { get => status; set => Set(ref status, value); }
     public string TimingText { get => timingText; set => Set(ref timingText, value); }
     public string? LastOutputFolder { get; private set; }
@@ -123,6 +139,7 @@ public sealed class WorkspaceHost : ObservableObject, IDisposable
         operationWorkspace = workspace;
         operationFinished = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         Log.Write(workspace?.Key ?? "App", "Operation started");
+        lastOperationFailed = false;
         IsBusy = true;
         activeOperationCancellation = new CancellationTokenSource();
         Progress = 0;
@@ -146,6 +163,7 @@ public sealed class WorkspaceHost : ObservableObject, IDisposable
             operationTimer.Stop();
             TimingText = $"Stopped after {OperationTiming.FormatCompact(operationTimer.Elapsed)}";
             Status = error.Message;
+            lastOperationFailed = true;
             AppendOperationReport("FAIL  " + error.Message);
             if (!closing) Dialogs.Error(error.Message);
         }
@@ -209,35 +227,61 @@ public sealed class WorkspaceHost : ObservableObject, IDisposable
         catch (Exception error) { Dialogs.Error(error.Message); }
     }
 
-    /// <summary>Moves a playhead from <paramref name="start"/> over <paramref name="length"/> source seconds, reporting through <paramref name="sink"/> (NaN when stopped).</summary>
-    public void StartPlayhead(Action<double> sink, double start, double length, double rate)
+    /// <summary>
+    /// Plays a rendered preview and moves a playhead from <paramref name="start"/> over <paramref name="length"/> source
+    /// seconds, reporting through <paramref name="sink"/> (NaN when stopped). <paramref name="rate"/> maps preview time
+    /// back to source time when the preview is faster or slower than the source.
+    /// </summary>
+    public void PlayPreview(string path, Action<double> sink, double start, double length, double rate)
     {
-        StopPlayhead();
+        StopPreview();
+        PreviewPlayer.Play(path);
         playheadSink = sink; playheadStart = start; playheadLength = length; playheadRate = rate;
         if (playheadTimer is null)
         {
             playheadTimer = new DispatcherTimer(DispatcherPriority.Render) { Interval = TimeSpan.FromMilliseconds(33) };
             playheadTimer.Tick += (_, _) => TickPlayhead();
         }
-        playheadClock.Restart();
         playheadTimer.Start();
         TickPlayhead();
+        RaisePreviewState();
     }
 
-    // ponytail: wall-clock estimate because PlaySound reports no position; use a real audio API if drift becomes visible.
+    public void StopPreview()
+    {
+        PreviewPlayer.Stop();
+        StopPlayhead();
+    }
+
     private void TickPlayhead()
     {
-        var travelled = playheadClock.Elapsed.TotalSeconds * playheadRate;
-        if (travelled >= playheadLength) { StopPlayhead(); return; }
+        PreviewPlayer.Poll();
+        var travelled = PreviewPlayer.Position.TotalSeconds * playheadRate;
+        if (!PreviewPlayer.IsPlaying || travelled >= playheadLength) { StopPlayhead(); return; }
         playheadSink?.Invoke(playheadStart + travelled);
     }
 
-    public void StopPlayhead()
+    private void SeekPreview(double sourceSeconds)
+    {
+        if (!PreviewPlayer.IsPlaying) return;
+        var offset = Math.Clamp(sourceSeconds - playheadStart, 0, playheadLength) / playheadRate;
+        PreviewPlayer.Position = TimeSpan.FromSeconds(offset);
+        TickPlayhead();
+    }
+
+    private void StopPlayhead()
     {
         playheadTimer?.Stop();
-        playheadClock.Reset();
         playheadSink?.Invoke(double.NaN);
         playheadSink = null;
+        RaisePreviewState();
+    }
+
+    private void RaisePreviewState()
+    {
+        Raise(nameof(PauseLabel));
+        PausePreviewCommand.RaiseCanExecuteChanged();
+        SeekPreviewCommand.RaiseCanExecuteChanged();
     }
 
     /// <summary>Cancels work, stops playback and waits for the running operation to finish.</summary>
@@ -247,8 +291,7 @@ public sealed class WorkspaceHost : ObservableObject, IDisposable
         Raise(nameof(IsWorkspaceEnabled));
         StateChanged?.Invoke();
         activeOperationCancellation?.Cancel();
-        PreviewPlayer.Stop();
-        StopPlayhead();
+        StopPreview();
         if (operationFinished is not null) await operationFinished.Task;
     }
 

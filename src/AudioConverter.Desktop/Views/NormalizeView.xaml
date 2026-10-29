@@ -1,0 +1,11 @@
+<UserControl x:Class="AudioConverter.Desktop.Views.NormalizeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel Style="{StaticResource PageHost}">
+        <TextBlock Style="{StaticResource PageTitle}" Text="Normalize" />
+        <TextBlock Style="{StaticResource PageSubtitle}" Text="Match the loudness of tracks or whole albums to a target such as -14 LUFS." />
+        <Border Style="{StaticResource Card}">
+            <TextBlock Style="{StaticResource Caption}" Text="This tool is being built." />
+        </Border>
+    </StackPanel>
+</UserControl>

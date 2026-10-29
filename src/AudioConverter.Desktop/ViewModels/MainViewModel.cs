@@ -22,15 +22,27 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         Compress = new CompressViewModel(Host);
         Artwork = new ArtworkViewModel(Host);
         Remix = new RemixViewModel(Host);
+        Tags = new TagsViewModel(Host);
+        Normalize = new NormalizeViewModel(Host);
+        Inspect = new InspectViewModel(Host);
+        Split = new SplitViewModel(Host);
         About = new AboutViewModel(Host);
-        workspaces = [Convert, Cut, Compress, Artwork, Remix];
+        workspaces = [Convert, Cut, Compress, Artwork, Remix, Tags, Normalize, Inspect, Split];
         activePage = Convert;
-        ShowConvertCommand = new RelayCommand(() => Show(Convert));
-        ShowCutCommand = new RelayCommand(() => Show(Cut));
-        ShowCompressCommand = new RelayCommand(() => Show(Compress));
-        ShowArtworkCommand = new RelayCommand(() => Show(Artwork));
-        ShowRemixCommand = new RelayCommand(() => Show(Remix));
-        ShowAboutCommand = new RelayCommand(() => Show(About));
+        Tools =
+        [
+            new NavItem("Convert", "GlyphConvert", Convert, Show),
+            new NavItem("Compress", "GlyphCompress", Compress, Show),
+            new NavItem("Normalize", "GlyphNormalize", Normalize, Show),
+            new NavItem("Cut", "GlyphCut", Cut, Show),
+            new NavItem("Split album", "GlyphSplit", Split, Show),
+            new NavItem("Remix", "GlyphRemix", Remix, Show),
+            new NavItem("Tags", "GlyphTags", Tags, Show),
+            new NavItem("Artwork", "GlyphArtwork", Artwork, Show),
+            new NavItem("Inspect", "GlyphInspect", Inspect, Show),
+        ];
+        AboutItem = new NavItem("About", "GlyphAbout", About, Show);
+        UpdateNavigation();
         ToggleThemeCommand = new AsyncRelayCommand(ToggleThemeAsync);
         OpenOutputFolderCommand = new RelayCommand(() => Host.OpenFolder(Host.LastOutputFolder));
         Host.PropertyChanged += OnHostChanged;
@@ -42,13 +54,14 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     public CompressViewModel Compress { get; }
     public ArtworkViewModel Artwork { get; }
     public RemixViewModel Remix { get; }
+    public TagsViewModel Tags { get; }
+    public NormalizeViewModel Normalize { get; }
+    public InspectViewModel Inspect { get; }
+    public SplitViewModel Split { get; }
     public AboutViewModel About { get; }
-    public RelayCommand ShowConvertCommand { get; }
-    public RelayCommand ShowCutCommand { get; }
-    public RelayCommand ShowCompressCommand { get; }
-    public RelayCommand ShowArtworkCommand { get; }
-    public RelayCommand ShowRemixCommand { get; }
-    public RelayCommand ShowAboutCommand { get; }
+    /// <summary>Sidebar entries for the tools, in display order.</summary>
+    public IReadOnlyList<NavItem> Tools { get; }
+    public NavItem AboutItem { get; }
     public AsyncRelayCommand ToggleThemeCommand { get; }
     public RelayCommand OpenOutputFolderCommand { get; }
 
@@ -57,12 +70,6 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     public WorkspaceBase? ActiveWorkspace => activePage as WorkspaceBase;
     public bool IsToolWorkspace => ActiveWorkspace is not null;
     public bool ShowOpenOutputFolder => !Host.IsBusy && Host.LastOutputFolder is not null && Host.LastOutputWorkspace == ActiveWorkspace;
-    public string ConvertTabState => TabState(Convert);
-    public string CutTabState => TabState(Cut);
-    public string CompressionTabState => TabState(Compress);
-    public string ArtworkTabState => TabState(Artwork);
-    public string RemixTabState => TabState(Remix);
-    public string AboutTabState => TabState(About);
     public string Theme { get => theme; private set { if (Set(ref theme, value)) { Raise(nameof(ThemeButtonText)); Raise(nameof(ThemeButtonToolTip)); } } }
     public string ThemeButtonText => $"Theme · {ThemeService.DisplayName(Theme)}";
     public string ThemeButtonToolTip => $"Switch to {ThemeService.DisplayName(ThemeService.Next(Theme))}";
@@ -98,14 +105,18 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         Host.Dispose();
     }
 
-    private string TabState(object page) => ReferenceEquals(activePage, page) ? "Active" : "Inactive";
-
-    private void Show(object page)
+    public void Show(object page)
     {
         if (ReferenceEquals(activePage, page)) return;
         activePage = page;
-        foreach (var name in new[] { nameof(ActivePage), nameof(ActiveWorkspace), nameof(IsToolWorkspace), nameof(ShowOpenOutputFolder), nameof(ConvertTabState), nameof(CutTabState), nameof(CompressionTabState), nameof(ArtworkTabState), nameof(RemixTabState), nameof(AboutTabState) })
+        UpdateNavigation();
+        foreach (var name in new[] { nameof(ActivePage), nameof(ActiveWorkspace), nameof(IsToolWorkspace), nameof(ShowOpenOutputFolder) })
             Raise(name);
+    }
+
+    private void UpdateNavigation()
+    {
+        foreach (var item in Tools.Append(AboutItem)) item.IsActive = ReferenceEquals(item.Page, activePage);
     }
 
     private void OnHostChanged(object? sender, PropertyChangedEventArgs e)
@@ -123,6 +134,19 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         }
         catch (Exception error) { Host.Dialogs.Error($"Unable to save theme settings: {error.Message}"); }
     }
+}
+
+/// <summary>A sidebar entry; <see cref="GlyphKey"/> names an icon resource in Themes/Controls.xaml.</summary>
+public sealed class NavItem(string label, string glyphKey, object page, Action<object> show) : ObservableObject
+{
+    private bool isActive;
+    public string Label { get; } = label;
+    public string GlyphKey { get; } = glyphKey;
+    public object Page { get; } = page;
+    public RelayCommand ShowCommand { get; } = new(() => show(page));
+    public bool IsActive { get => isActive; set { if (Set(ref isActive, value)) Raise(nameof(State)); } }
+    /// <summary>"Active" or "Inactive", the value the NavButton style triggers on.</summary>
+    public string State => IsActive ? "Active" : "Inactive";
 }
 
 public sealed class AboutViewModel(WorkspaceHost host)

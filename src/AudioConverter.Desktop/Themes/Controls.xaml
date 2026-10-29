@@ -4,6 +4,7 @@
     <sys:String x:Key="GlyphConvert">&#xE8AB;</sys:String><sys:String x:Key="GlyphCut">&#xE8C6;</sys:String><sys:String x:Key="GlyphCompress">&#xE7B8;</sys:String><sys:String x:Key="GlyphArtwork">&#xE8B9;</sys:String><sys:String x:Key="GlyphRemix">&#xE9E9;</sys:String>
     <sys:String x:Key="GlyphAbout">&#xE946;</sys:String><sys:String x:Key="GlyphTheme">&#xE706;</sys:String><sys:String x:Key="GlyphLock">&#xE72E;</sys:String><sys:String x:Key="GlyphDrop">&#xE898;</sys:String><sys:String x:Key="GlyphFolder">&#xE8B7;</sys:String>
     <sys:String x:Key="GlyphAudio">&#xE8D6;</sys:String><sys:String x:Key="GlyphUp">&#xE70E;</sys:String><sys:String x:Key="GlyphDown">&#xE70D;</sys:String><sys:String x:Key="GlyphRemove">&#xE711;</sys:String><sys:String x:Key="GlyphPlay">&#xE768;</sys:String><sys:String x:Key="GlyphStop">&#xE71A;</sys:String>
+    <sys:String x:Key="GlyphTags">&#xE8EC;</sys:String><sys:String x:Key="GlyphNormalize">&#xE767;</sys:String><sys:String x:Key="GlyphInspect">&#xE9D2;</sys:String><sys:String x:Key="GlyphSplit">&#xE8FD;</sys:String>
     <sys:String x:Key="GlyphChevron">&#xE76C;</sys:String><sys:String x:Key="GlyphCheck">&#xE73E;</sys:String><sys:String x:Key="GlyphSkip">&#xE738;</sys:String>
 
     <!-- ThemeService.DisableMotion zeroes these before any style loads when Windows animations are off. -->
@@ -200,6 +201,7 @@
     <converters:EmptyToVisibilityConverter x:Key="EmptyToVisibility" />
     <converters:PathPartConverter x:Key="PathPart" />
     <converters:UpperCaseConverter x:Key="UpperCase" />
+    <converters:ResourceLookupConverter x:Key="ResourceLookup" />
     <DataTemplate x:Key="FormatItem"><TextBlock Text="{Binding Converter={StaticResource UpperCase}}" /></DataTemplate>
     <Style x:Key="FileName" TargetType="TextBlock"><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="TextTrimming" Value="CharacterEllipsis" /></Style>
     <Style x:Key="FilePath" TargetType="TextBlock" BasedOn="{StaticResource Caption}"><Setter Property="TextWrapping" Value="NoWrap" /><Setter Property="TextTrimming" Value="CharacterEllipsis" /><Setter Property="Margin" Value="0,3,0,0" /></Style>

@@ -6,6 +6,12 @@ namespace AudioConverter.Desktop.Services;
 public interface IDialogService
 {
     string? ChooseAudioFile();
+    /// <summary>Several audio files at once; null when cancelled.</summary>
+    IReadOnlyList<string>? ChooseAudioFiles();
+    /// <summary>Any existing file matching a filter such as "Cue sheets|*.cue".</summary>
+    string? ChooseFile(string filter);
+    /// <summary>A destination path for a new file; null when cancelled.</summary>
+    string? ChooseSaveFile(string filter, string fileName);
     string? ChooseFolder(string? initialDirectory = null);
     string? ChooseCoverImage();
     void Error(string message);
@@ -14,11 +20,29 @@ public interface IDialogService
 
 public sealed class DialogService : IDialogService
 {
-    private const string AudioFilter = "Audio files|*.mp3;*.flac;*.wav;*.ogg;*.aac;*.m4a|All files|*.*";
+    public const string AudioFilter = "Audio files|*.mp3;*.flac;*.wav;*.ogg;*.aac;*.m4a|All files|*.*";
 
     public string? ChooseAudioFile()
     {
         var dialog = new OpenFileDialog { Filter = AudioFilter, CheckFileExists = true, Multiselect = false };
+        return dialog.ShowDialog() == true ? dialog.FileName : null;
+    }
+
+    public IReadOnlyList<string>? ChooseAudioFiles()
+    {
+        var dialog = new OpenFileDialog { Filter = AudioFilter, CheckFileExists = true, Multiselect = true };
+        return dialog.ShowDialog() == true ? dialog.FileNames : null;
+    }
+
+    public string? ChooseFile(string filter)
+    {
+        var dialog = new OpenFileDialog { Filter = filter, CheckFileExists = true, Multiselect = false };
+        return dialog.ShowDialog() == true ? dialog.FileName : null;
+    }
+
+    public string? ChooseSaveFile(string filter, string fileName)
+    {
+        var dialog = new SaveFileDialog { Filter = filter, FileName = fileName };
         return dialog.ShowDialog() == true ? dialog.FileName : null;
     }
 

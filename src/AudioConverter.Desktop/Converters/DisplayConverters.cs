@@ -71,6 +71,14 @@ public sealed class ReportLinesConverter : IValueConverter
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => Binding.DoNothing;
 }
 
+/// <summary>Looks up an application resource by key, e.g. a glyph named by a view model.</summary>
+public sealed class ResourceLookupConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        value is string key ? Application.Current?.TryFindResource(key) ?? "" : "";
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => Binding.DoNothing;
+}
+
 public sealed class UpperCaseConverter : IValueConverter
 {
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) => value?.ToString()?.ToUpperInvariant() ?? "";

@@ -123,8 +123,10 @@ public sealed class WorkspaceTests
         await OnSta(async () =>
         {
             var application = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
+            string[] pages;
+            using (var probe = new MainViewModel(new TestDialogs())) pages = probe.Tools.Append(probe.AboutItem).Select(item => item.Label).ToArray();
             foreach (var theme in ThemeService.Themes)
-            foreach (var workspace in new[] { "Convert", "Cut", "Compress", "Artwork", "Remix", "About" })
+            foreach (var workspace in pages)
             foreach (var (width, height) in new[] { (900, 650), (1180, 820), (1180, 2300) })
             {
                 application.Resources.MergedDictionaries.Clear();
@@ -133,16 +135,7 @@ public sealed class WorkspaceTests
                 // Same path as Windows "Animation effects" off: transitions finish instantly, so captures show final states.
                 ThemeService.DisableMotion(application.Resources);
                 using var vm = new MainViewModel(new TestDialogs());
-                var show = workspace switch
-                {
-                    "Convert" => vm.ShowConvertCommand,
-                    "Cut" => vm.ShowCutCommand,
-                    "Compress" => vm.ShowCompressCommand,
-                    "Artwork" => vm.ShowArtworkCommand,
-                    "Remix" => vm.ShowRemixCommand,
-                    _ => vm.ShowAboutCommand,
-                };
-                show.Execute(null);
+                vm.Tools.Append(vm.AboutItem).Single(item => item.Label == workspace).ShowCommand.Execute(null);
                 if (workspace == "Remix")
                 {
                     vm.Remix.AddRemixEffectCommand.Execute(null);
@@ -161,7 +154,7 @@ public sealed class WorkspaceTests
                 bitmap.Render(root);
                 var encoder = new System.Windows.Media.Imaging.PngBitmapEncoder();
                 encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(bitmap));
-                using (var stream = System.IO.File.Create(System.IO.Path.Combine(AppContext.BaseDirectory, $"layout-{theme}-{workspace}-{width}x{height}.png"))) encoder.Save(stream);
+                using (var stream = System.IO.File.Create(System.IO.Path.Combine(AppContext.BaseDirectory, $"layout-{theme}-{workspace.Replace(' ', '-')}-{width}x{height}.png"))) encoder.Save(stream);
                 await vm.ShutdownAsync();
                 window.Close();
                 await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
@@ -211,6 +204,9 @@ public sealed class WorkspaceTests
     {
         public int Confirmations { get; private set; }
         public string? ChooseAudioFile() => null;
+        public IReadOnlyList<string>? ChooseAudioFiles() => null;
+        public string? ChooseFile(string filter) => null;
+        public string? ChooseSaveFile(string filter, string fileName) => null;
         public string? ChooseFolder(string? initialDirectory = null) => null;
         public string? ChooseCoverImage() => null;
         public void Error(string message) => Assert.Fail(message);

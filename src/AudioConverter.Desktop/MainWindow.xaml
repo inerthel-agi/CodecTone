@@ -17,6 +17,13 @@
         <DataTemplate DataType="{x:Type vm:ArtworkViewModel}"><views:ArtworkView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:RemixViewModel}"><views:RemixView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:AboutViewModel}"><views:AboutView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:TagsViewModel}"><views:TagsView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:NormalizeViewModel}"><views:NormalizeView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:InspectViewModel}"><views:InspectView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:SplitViewModel}"><views:SplitView /></DataTemplate>
+        <DataTemplate x:Key="NavEntry" DataType="{x:Type vm:NavItem}">
+            <Button Style="{StaticResource NavButton}" Command="{Binding ShowCommand}" Tag="{Binding State}" AutomationProperties.Name="{Binding Label}"><StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource Icon}" Text="{Binding GlyphKey, Converter={StaticResource ResourceLookup}}" Width="28" /><TextBlock Text="{Binding Label}" /></StackPanel></Button>
+        </DataTemplate>
     </Window.Resources>
     <Grid Background="{DynamicResource BackdropBrush}" TextElement.Foreground="{DynamicResource TextBrush}">
         <Grid.ColumnDefinitions><ColumnDefinition Width="184" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
@@ -28,20 +35,14 @@
                     <TextBlock Text="CodecTone" FontSize="17" FontWeight="SemiBold" VerticalAlignment="Center" Margin="10,0,0,0" />
                 </StackPanel>
                 <StackPanel DockPanel.Dock="Bottom">
-                    <Button Style="{StaticResource NavButton}" Command="{Binding ShowAboutCommand}" AutomationProperties.Name="About" Tag="{Binding AboutTabState}"><StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource Icon}" Text="{StaticResource GlyphAbout}" Width="28" /><TextBlock Text="About" /></StackPanel></Button>
+                    <ContentControl Content="{Binding AboutItem}" ContentTemplate="{StaticResource NavEntry}" Focusable="False" />
                     <Button Style="{StaticResource NavButton}" Command="{Binding ToggleThemeCommand}" AutomationProperties.Name="{Binding ThemeButtonText}" AutomationProperties.HelpText="{Binding ThemeButtonToolTip}" ToolTip="{Binding ThemeButtonToolTip}"><StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource Icon}" Text="{StaticResource GlyphTheme}" Width="28" /><TextBlock Text="{Binding ThemeButtonText}" /></StackPanel></Button>
                     <StackPanel Orientation="Horizontal" Margin="10,14,0,0" ToolTip="Media never leaves this computer.">
                         <TextBlock Style="{StaticResource Icon}" Text="{StaticResource GlyphLock}" FontSize="12" Foreground="{DynamicResource MutedTextBrush}" Width="28" />
                         <TextBlock Style="{StaticResource Caption}" Text="Local · no telemetry" />
                     </StackPanel>
                 </StackPanel>
-                <StackPanel>
-                    <Button Style="{StaticResource NavButton}" Command="{Binding ShowConvertCommand}" AutomationProperties.Name="Convert" Tag="{Binding ConvertTabState}"><StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource Icon}" Text="{StaticResource GlyphConvert}" Width="28" /><TextBlock Text="Convert" /></StackPanel></Button>
-                    <Button Style="{StaticResource NavButton}" Command="{Binding ShowCutCommand}" AutomationProperties.Name="Cut" Tag="{Binding CutTabState}"><StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource Icon}" Text="{StaticResource GlyphCut}" Width="28" /><TextBlock Text="Cut" /></StackPanel></Button>
-                    <Button Style="{StaticResource NavButton}" Command="{Binding ShowCompressCommand}" AutomationProperties.Name="Compress" Tag="{Binding CompressionTabState}"><StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource Icon}" Text="{StaticResource GlyphCompress}" Width="28" /><TextBlock Text="Compress" /></StackPanel></Button>
-                    <Button Style="{StaticResource NavButton}" Command="{Binding ShowArtworkCommand}" AutomationProperties.Name="Artwork" Tag="{Binding ArtworkTabState}"><StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource Icon}" Text="{StaticResource GlyphArtwork}" Width="28" /><TextBlock Text="Artwork" /></StackPanel></Button>
-                    <Button Style="{StaticResource NavButton}" Command="{Binding ShowRemixCommand}" AutomationProperties.Name="Remix" Tag="{Binding RemixTabState}"><StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource Icon}" Text="{StaticResource GlyphRemix}" Width="28" /><TextBlock Text="Remix" /></StackPanel></Button>
-                </StackPanel>
+                <ItemsControl ItemsSource="{Binding Tools}" ItemTemplate="{StaticResource NavEntry}" Focusable="False" />
             </DockPanel>
         </Border>
 

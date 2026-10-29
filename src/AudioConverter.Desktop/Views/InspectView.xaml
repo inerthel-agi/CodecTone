@@ -1,0 +1,11 @@
+<UserControl x:Class="AudioConverter.Desktop.Views.InspectView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel Style="{StaticResource PageHost}">
+        <TextBlock Style="{StaticResource PageTitle}" Text="Inspect" />
+        <TextBlock Style="{StaticResource PageSubtitle}" Text="See a file's spectrogram and details, and spot lossless files made from lossy sources." />
+        <Border Style="{StaticResource Card}">
+            <TextBlock Style="{StaticResource Caption}" Text="This tool is being built." />
+        </Border>
+    </StackPanel>
+</UserControl>

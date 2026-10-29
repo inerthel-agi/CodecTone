@@ -32,6 +32,7 @@ public sealed class WorkspaceHost : ObservableObject, IDisposable
     private bool closing;
     private bool ffmpegMissing;
     private bool lastOperationFailed;
+    private bool settingsLoaded;
     private double progress;
     private string status = "Ready";
     private string timingText = "";
@@ -88,13 +89,20 @@ public sealed class WorkspaceHost : ObservableObject, IDisposable
     public WorkspaceBase? LastOutputWorkspace { get; private set; }
     public CancellationToken ActiveOperationToken => activeOperationCancellation?.Token ?? CancellationToken.None;
 
-    public async Task LoadSettingsAsync() => Settings = await settingsStore.LoadAsync();
+    public async Task LoadSettingsAsync()
+    {
+        Settings = await settingsStore.LoadAsync();
+        settingsLoaded = true;
+    }
 
-    /// <summary>Applies a change to the persisted settings and saves them.</summary>
+    /// <summary>
+    /// Applies a change to the persisted settings and saves them. Does nothing until settings were loaded, so a host
+    /// that never read the file (tests, failed startup) cannot overwrite the user's settings with defaults.
+    /// </summary>
     public async Task SaveSettingsAsync(Func<AppSettings, AppSettings> update, CancellationToken cancellationToken = default)
     {
         Settings = update(Settings);
-        await settingsStore.SaveAsync(Settings, cancellationToken);
+        if (settingsLoaded) await settingsStore.SaveAsync(Settings, cancellationToken);
     }
 
     public void TryLocateFfmpeg()

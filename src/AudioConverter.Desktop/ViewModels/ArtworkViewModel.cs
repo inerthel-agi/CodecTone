@@ -62,6 +62,20 @@ public sealed class ArtworkViewModel : WorkspaceBase
     public System.Windows.Media.Imaging.BitmapImage? ArtworkPreview { get => artworkPreview; private set => Set(ref artworkPreview, value); }
     public string ArtworkPreviewInfo { get => artworkPreviewInfo; private set => Set(ref artworkPreviewInfo, value); }
 
+    public override void LoadPreferences(IReadOnlyDictionary<string, string> preferences)
+    {
+        ArtworkOutputFormat = EnumPreference<ArtworkOutputFormat>(Preference(preferences, "Format")) ?? ArtworkOutputFormat;
+        ArtworkLimitDimensions = BoolPreference(Preference(preferences, "LimitDimensions")) ?? ArtworkLimitDimensions;
+        ArtworkMaximumDimension = Preference(preferences, "MaximumDimension") ?? ArtworkMaximumDimension;
+    }
+
+    public override void SavePreferences(IDictionary<string, string> preferences)
+    {
+        preferences[$"{Key}.Format"] = ArtworkOutputFormat.ToString();
+        preferences[$"{Key}.LimitDimensions"] = ArtworkLimitDimensions.ToString();
+        preferences[$"{Key}.MaximumDimension"] = ArtworkMaximumDimension;
+    }
+
     public override async Task AcceptDropAsync(IReadOnlyList<string> paths) =>
         await ChooseSourceAsync(paths.FirstOrDefault(item => File.Exists(item) || Directory.Exists(item)));
 

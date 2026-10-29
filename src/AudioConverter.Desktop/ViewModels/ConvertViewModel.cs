@@ -44,6 +44,26 @@ public sealed class ConvertViewModel : WorkspaceBase
     public bool PreserveMetadata { get => preserveMetadata; set => Set(ref preserveMetadata, value); }
     public bool Overwrite { get => overwrite; set => Set(ref overwrite, value); }
 
+    public override void LoadPreferences(IReadOnlyDictionary<string, string> preferences)
+    {
+        SelectedFormat = EnumPreference<AudioFormat>(Preference(preferences, "Format")) ?? SelectedFormat;
+        Bitrate = Choice(Preference(preferences, "Bitrate"), Bitrates) ?? Bitrate;
+        SampleRate = Choice(Preference(preferences, "SampleRate"), SampleRates) ?? SampleRate;
+        BitDepth = Choice(Preference(preferences, "BitDepth"), BitDepths) ?? BitDepth;
+        PreserveMetadata = BoolPreference(Preference(preferences, "PreserveMetadata")) ?? PreserveMetadata;
+        Suffix = Preference(preferences, "Suffix") ?? Suffix;
+    }
+
+    public override void SavePreferences(IDictionary<string, string> preferences)
+    {
+        preferences[$"{Key}.Format"] = SelectedFormat.ToString();
+        preferences[$"{Key}.Bitrate"] = Bitrate;
+        preferences[$"{Key}.SampleRate"] = SampleRate;
+        preferences[$"{Key}.BitDepth"] = BitDepth;
+        preferences[$"{Key}.PreserveMetadata"] = PreserveMetadata.ToString();
+        preferences[$"{Key}.Suffix"] = Suffix;
+    }
+
     public override Task AcceptDropAsync(IReadOnlyList<string> paths)
     {
         if (paths.FirstOrDefault(item => File.Exists(item) || Directory.Exists(item)) is { } path) SourcePath = path;

@@ -176,6 +176,22 @@ public sealed class RemixViewModel : WorkspaceBase
     public string RemixCoverAction { get => remixCoverAction; set => Set(ref remixCoverAction, value); }
     public string RemixCoverPath { get => remixCoverPath; set => Set(ref remixCoverPath, value); }
 
+    public override void LoadPreferences(IReadOnlyDictionary<string, string> preferences)
+    {
+        if (EnumPreference<RemixIntensity>(Preference(preferences, "Intensity")) is { } intensity) SelectedRemixIntensity = intensity;
+        RemixBitrate = Choice(Preference(preferences, "Bitrate"), Bitrates) ?? RemixBitrate;
+        RemixSuffix = Preference(preferences, "Suffix") ?? RemixSuffix;
+        if (double.TryParse(Preference(preferences, "PreviewVolume"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var volume)) PreviewVolume = volume;
+    }
+
+    public override void SavePreferences(IDictionary<string, string> preferences)
+    {
+        preferences[$"{Key}.Intensity"] = SelectedRemixIntensity.ToString();
+        preferences[$"{Key}.Bitrate"] = RemixBitrate;
+        preferences[$"{Key}.Suffix"] = RemixSuffix;
+        preferences[$"{Key}.PreviewVolume"] = PreviewVolume.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    }
+
     public override async Task AcceptDropAsync(IReadOnlyList<string> paths)
     {
         if (paths.FirstOrDefault(File.Exists) is { } path) await LoadRemixSourceAsync(path);

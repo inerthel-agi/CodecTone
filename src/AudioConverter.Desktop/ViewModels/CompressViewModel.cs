@@ -62,6 +62,24 @@ public sealed class CompressViewModel : WorkspaceBase
     public bool CompressionOverwrite { get => compressionOverwrite; set => Set(ref compressionOverwrite, value); }
     public string CompressionEstimate { get => compressionEstimate; private set => Set(ref compressionEstimate, value); }
 
+    public override void LoadPreferences(IReadOnlyDictionary<string, string> preferences)
+    {
+        if (EnumPreference<AudioFormat>(Preference(preferences, "Format")) is { } format && CompressionFormats.Contains(format)) CompressionFormat = format;
+        SelectedCompressionProfile = Choice(Preference(preferences, "Profile"), CompressionProfiles) ?? SelectedCompressionProfile;
+        CompressionTargetTotalMb = Preference(preferences, "TargetMb") ?? CompressionTargetTotalMb;
+        CompressionPreserveMetadata = BoolPreference(Preference(preferences, "PreserveMetadata")) ?? CompressionPreserveMetadata;
+        CompressionOptimizeArtwork = BoolPreference(Preference(preferences, "OptimizeArtwork")) ?? CompressionOptimizeArtwork;
+    }
+
+    public override void SavePreferences(IDictionary<string, string> preferences)
+    {
+        preferences[$"{Key}.Format"] = CompressionFormat.ToString();
+        preferences[$"{Key}.Profile"] = SelectedCompressionProfile;
+        preferences[$"{Key}.TargetMb"] = CompressionTargetTotalMb;
+        preferences[$"{Key}.PreserveMetadata"] = CompressionPreserveMetadata.ToString();
+        preferences[$"{Key}.OptimizeArtwork"] = CompressionOptimizeArtwork.ToString();
+    }
+
     public override async Task AcceptDropAsync(IReadOnlyList<string> paths) =>
         await ChooseSourceAsync(paths.FirstOrDefault(item => File.Exists(item) || Directory.Exists(item)));
 

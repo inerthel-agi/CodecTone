@@ -34,7 +34,17 @@ public abstract class WorkspaceBase : ObservableObject
     public abstract ICommand PrimaryCommand { get; }
     public abstract string PrimaryLabel { get; }
 
+    /// <summary>Restores choices saved by <see cref="SavePreferences"/>; keys are prefixed with <see cref="Key"/>.</summary>
+    public virtual void LoadPreferences(IReadOnlyDictionary<string, string> preferences) { }
+    public virtual void SavePreferences(IDictionary<string, string> preferences) { }
     public virtual Task AcceptDropAsync(IReadOnlyList<string> paths) => Task.CompletedTask;
+
+    protected string? Preference(IReadOnlyDictionary<string, string> preferences, string name) =>
+        preferences.TryGetValue($"{Key}.{name}", out var value) ? value : null;
+    protected static T? EnumPreference<T>(string? value) where T : struct, Enum => Enum.TryParse<T>(value, out var parsed) ? parsed : null;
+    protected static bool? BoolPreference(string? value) => bool.TryParse(value, out var parsed) ? parsed : null;
+    /// <summary>Keeps a stored value only when it is one of the offered choices.</summary>
+    protected static string? Choice(string? value, IEnumerable<string> allowed) => value is not null && allowed.Contains(value) ? value : null;
     public virtual Task ShutdownAsync() => Task.CompletedTask;
     public void AppendReport(string line) => Report += "\n" + line;
     protected virtual void RaiseCommands() { }

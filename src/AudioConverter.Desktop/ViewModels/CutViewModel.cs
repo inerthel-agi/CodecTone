@@ -60,6 +60,18 @@ public sealed class CutViewModel : WorkspaceBase
     public double[] WaveformPeaks { get => waveformPeaks; private set => Set(ref waveformPeaks, value); }
     public double CutPlayheadSeconds { get => cutPlayheadSeconds; private set => Set(ref cutPlayheadSeconds, value); }
 
+    public override void LoadPreferences(IReadOnlyDictionary<string, string> preferences)
+    {
+        CutSuffix = Preference(preferences, "Suffix") ?? CutSuffix;
+        PreserveMetadata = BoolPreference(Preference(preferences, "PreserveMetadata")) ?? PreserveMetadata;
+    }
+
+    public override void SavePreferences(IDictionary<string, string> preferences)
+    {
+        preferences[$"{Key}.Suffix"] = CutSuffix;
+        preferences[$"{Key}.PreserveMetadata"] = PreserveMetadata.ToString();
+    }
+
     public override async Task AcceptDropAsync(IReadOnlyList<string> paths)
     {
         if (paths.FirstOrDefault(File.Exists) is { } path) await LoadCutSourceAsync(path);

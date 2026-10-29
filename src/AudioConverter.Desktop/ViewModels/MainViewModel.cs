@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using AudioConverter.Desktop.Mvvm;
 using AudioConverter.Desktop.Services;
 using AudioConverter.Infrastructure.Shell;
@@ -80,6 +81,8 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         if (Host.IsClosing) return;
         Theme = ThemeService.Normalize(Host.Settings.Theme);
         Convert.OutputFolder = Host.Settings.LastOutputDirectory ?? "";
+        var preferences = Host.Settings.Preferences ?? new Dictionary<string, string>();
+        foreach (var workspace in workspaces) workspace.LoadPreferences(preferences);
         ThemeService.Apply(Theme);
         Host.TryLocateFfmpeg();
     }
@@ -94,7 +97,17 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     {
         await Host.BeginShutdownAsync();
         foreach (var workspace in workspaces) await workspace.ShutdownAsync();
+        await SavePreferencesAsync();
         Dispose();
+    }
+
+    /// <summary>Stores every tool's choices so the next launch starts where this one ended.</summary>
+    public async Task SavePreferencesAsync()
+    {
+        var preferences = new Dictionary<string, string>(Host.Settings.Preferences ?? new Dictionary<string, string>());
+        foreach (var workspace in workspaces) workspace.SavePreferences(preferences);
+        try { await Host.SaveSettingsAsync(settings => settings with { Preferences = preferences }); }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException) { Host.Log.Write("Settings", error.Message); }
     }
 
     public void Dispose()

@@ -7,6 +7,22 @@ namespace AudioConverter.Infrastructure.Tests;
 public sealed class SettingsStoreTests
 {
     [TestMethod]
+    public async Task Preferences_RoundTrip()
+    {
+        var root = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        try
+        {
+            var store = new JsonSettingsStore(root);
+            await store.SaveAsync(new AppSettings("Glass", null, new Dictionary<string, string> { ["Convert.Format"] = "Flac" }, "fr"));
+            var loaded = await store.LoadAsync();
+            Assert.AreEqual("Glass", loaded.Theme);
+            Assert.AreEqual("fr", loaded.Language);
+            Assert.AreEqual("Flac", loaded.Preferences!["Convert.Format"]);
+        }
+        finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
+    }
+
+    [TestMethod]
     public async Task SaveAndLoad_RoundTripsSettings()
     {
         var root = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));

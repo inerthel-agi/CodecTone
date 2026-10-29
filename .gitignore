@@ -32,3 +32,4 @@ tests/test_audio_converter.py
 
 # Claude Code agent worktrees
 .claude/worktrees/
+packaging/winget/out/

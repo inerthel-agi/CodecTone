@@ -33,6 +33,10 @@ dotnet publish src\AudioConverter.Cli\AudioConverter.Cli.csproj -c Release -r wi
 if errorlevel 1 exit /b 1
 if exist "release\cli\AudioConverter.Cli.exe" del /q "release\cli\AudioConverter.Cli.exe"
 
+rem Signs the executables only when a certificate is configured; see docs\distribution.md.
+powershell -NoProfile -ExecutionPolicy Bypass -File "scripts\sign-release.ps1"
+if errorlevel 1 exit /b 1
+
 echo Built lightweight GUI: %~dp0release\final\CodecTone.exe
 echo Built standalone GUI: %~dp0release\final\CodecTone-Standalone.exe
 echo Built CLI: %~dp0release\cli\CodecTone.Cli.exe

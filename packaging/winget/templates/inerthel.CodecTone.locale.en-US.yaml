@@ -1,0 +1,19 @@
+# Filled by scripts/prepare-winget.ps1
+PackageIdentifier: inerthel.CodecTone
+PackageVersion: {{VERSION}}
+PackageLocale: en-US
+Publisher: inerthel
+PublisherUrl: https://github.com/inerthel-agi
+PackageName: CodecTone
+PackageUrl: https://github.com/inerthel-agi/CodecTone
+License: MIT
+LicenseUrl: https://github.com/inerthel-agi/CodecTone/blob/main/LICENSE
+ShortDescription: Convert, cut, compress, normalize, split, tag and remix audio locally on Windows with FFmpeg.
+Tags:
+  - audio
+  - converter
+  - ffmpeg
+  - flac
+  - mp3
+ManifestType: defaultLocale
+ManifestVersion: 1.6.0

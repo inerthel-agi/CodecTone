@@ -4,6 +4,13 @@
 
 ### Added
 
+- Added four tools. **Normalize** brings tracks or whole albums to a loudness target under a true-peak ceiling. **Split album** cuts one recording into tracks from a cue sheet or from silences. **Tags** edits tags for many files and renames files from their tags. **Inspect** shows a spectrogram, file details, and a lossy-source check.
+- Added French. The interface follows the Windows display language, and the sidebar language button switches between System, English, and Français without a restart.
+- Convert now keeps a queue of files with a status per file. Compress lists the files it will process and lets you switch files off.
+- Remix can save, apply, and delete your own presets.
+- Previews play through waveOut with the real position: pause, seek on the time ruler, and live volume. WPF `MediaPlayer` needed Windows Media Player, which N and LTSC editions lack.
+- CodecTone remembers each tool's choices between launches, and the taskbar button shows operation progress.
+- Added a GitHub Actions workflow that builds and tests on Windows, plus scripts that prepare code signing and a winget manifest (see `docs/distribution.md`). Nothing is signed or published by default.
 - Added a Glass theme: translucent layers with bright top edges and larger corner radii over the Windows 11 acrylic backdrop. Without the backdrop (Windows 10, Windows 11 before 22H2, or transparency effects off), it falls back to an opaque tinted background. The theme button now cycles OLED, White, and Glass, and shows the current theme.
 
 ### Changed
@@ -22,6 +29,8 @@
 - Cut and Remix playback controls sit under the waveform. The bottom bar keeps only the status and the main action.
 - Remix presets show as cards with a one-line description. Intensity and the Export/Metadata inspector use segmented controls. Each effect parameter has a slider bounded by the same limits the rack validator enforces.
 - Reports show one row per file with a status icon and shortened paths. The full text stays under Raw report and in Save report.
+- Split the main view model into one view model per tool on top of a shared `WorkspaceHost`.
+- The About page lists all nine tools.
 - The About page and the GitHub button now point to `https://github.com/inerthel-agi` and credit inerthel. The single-instance mutex and activation event names changed accordingly, so a 1.2.0 instance and this build can run side by side.
 
 ### Fixed

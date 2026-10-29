@@ -6,6 +6,7 @@ using AudioConverter.Core.Models;
 using AudioConverter.Core.Tags;
 using AudioConverter.Desktop.Mvvm;
 using AudioConverter.Infrastructure.Tags;
+using L = AudioConverter.Desktop.Localization.Localizer;
 
 namespace AudioConverter.Desktop.ViewModels;
 
@@ -20,7 +21,7 @@ public sealed class TagsViewModel : WorkspaceBase
     private string bulkDate = "";
     private bool suspendRefresh;
 
-    public TagsViewModel(WorkspaceHost host) : base(host, "Tags", "Nothing has run yet.")
+    public TagsViewModel(WorkspaceHost host) : base(host, "Tags", "ReportEmptyGeneric")
     {
         ChooseFilesCommand = new AsyncRelayCommand(async () => { var paths = Dialogs.ChooseAudioFiles(); if (paths is not null) await AddSourcesAsync(paths); }, () => !Host.IsBusy);
         ChooseFolderCommand = new AsyncRelayCommand(async () => { var path = Dialogs.ChooseFolder(); if (path is not null) await AddSourcesAsync([path]); }, () => !Host.IsBusy);
@@ -30,7 +31,7 @@ public sealed class TagsViewModel : WorkspaceBase
     }
 
     public override ICommand PrimaryCommand => SaveTagsCommand;
-    public override string PrimaryLabel => "Save tags";
+    public override string PrimaryLabel => L.T("SaveTags");
     public AsyncRelayCommand ChooseFilesCommand { get; }
     public AsyncRelayCommand ChooseFolderCommand { get; }
     public RelayCommand ClearCommand { get; }
@@ -46,8 +47,8 @@ public sealed class TagsViewModel : WorkspaceBase
         {
             if (Rows.Count == 0) return "";
             var edited = Rows.Count(row => row.IsDirty);
-            var rename = RenameFromTags ? $" · {Rows.Count(row => row.PendingName.Length > 0)} to rename" : "";
-            return $"{Files(Rows.Count)} · {edited} with tag changes{rename}";
+            var rename = RenameFromTags ? L.F("ToRename", Rows.Count(row => row.PendingName.Length > 0)) : "";
+            return L.F("WithTagChanges", Files(Rows.Count), edited, rename);
         }
     }
 
@@ -84,7 +85,7 @@ public sealed class TagsViewModel : WorkspaceBase
                         .Select(file => file.Path).ToArray(), ActiveOperationToken));
                 }
                 else if (File.Exists(path)) candidates.Add(Path.GetFullPath(path));
-                else lines.Add($"SKIP  {path}: not found");
+                else lines.Add(L.F("SKIPNotFound", path));
             }
 
             var known = new HashSet<string>(Rows.Select(row => row.SourcePath), StringComparer.OrdinalIgnoreCase);
@@ -95,8 +96,8 @@ public sealed class TagsViewModel : WorkspaceBase
                 for (var index = 0; index < fresh.Length; index++)
                 {
                     var path = fresh[index];
-                    UpdateOperationProgress((double)index / fresh.Length, $"Reading tags {index + 1}/{fresh.Length}: {Path.GetFileName(path)}");
-                    if (!IsAudioFile(path)) { lines.Add($"SKIP  {Path.GetFileName(path)}: unsupported format"); continue; }
+                    UpdateOperationProgress((double)index / fresh.Length, L.F("ReadingTags", index + 1, fresh.Length, Path.GetFileName(path)));
+                    if (!IsAudioFile(path)) { lines.Add(L.F("SKIPUnsupportedFormat", Path.GetFileName(path))); continue; }
                     try
                     {
                         var info = await Host.Probe!.ProbeAsync(path, ActiveOperationToken);
@@ -109,9 +110,9 @@ public sealed class TagsViewModel : WorkspaceBase
             finally
             {
                 MergeRows(added);
-                Report = string.Join('\n', new[] { $"Added {Files(added.Count)}." }.Concat(lines));
+                Report = string.Join('\n', new[] { L.F("AddedFiles", Files(added.Count)) }.Concat(lines));
             }
-            UpdateOperationProgress(1, $"Added {Files(added.Count)}.");
+            UpdateOperationProgress(1, L.F("AddedFiles", Files(added.Count)));
         });
     }
 
@@ -120,7 +121,7 @@ public sealed class TagsViewModel : WorkspaceBase
         await RunBusyAsync(async () =>
         {
             Host.EnsureFfmpeg();
-            Report = "Tag save started.";
+            Report = L.T("TagSaveStarted");
             var rows = Rows.ToArray();
             var targets = PlanTargets();
             var writer = new TagWriteService(Host.Tools!);
@@ -137,11 +138,11 @@ public sealed class TagsViewModel : WorkspaceBase
                 var target = targets[index];
                 var renaming = !string.Equals(target, row.SourcePath, StringComparison.Ordinal);
                 var tagsChanged = row.IsDirty;
-                UpdateOperationProgress((double)index / rows.Length, $"Saving {index + 1}/{rows.Length}: {name}");
+                UpdateOperationProgress((double)index / rows.Length, L.F("Saving", index + 1, rows.Length, name));
                 if (!tagsChanged && !renaming)
                 {
                     skipped++;
-                    lines.Add($"SKIP  {name}: no changes");
+                    lines.Add(L.F("SKIPNoChanges", name));
                 }
                 else
                 {
@@ -161,22 +162,22 @@ public sealed class TagsViewModel : WorkspaceBase
                             row.MoveTo(target);
                         }
                         succeeded++;
-                        lines.Add(renaming ? $"OK  {name} -> {Path.GetFileName(target)}" : $"OK  {name}: tags saved");
+                        lines.Add(renaming ? $"OK  {name} -> {Path.GetFileName(target)}" : L.F("OKTagsSaved", name));
                     }
                     catch (OperationCanceledException) { throw; }
                     catch (Exception error)
                     {
                         failed++;
-                        lines.Add($"FAIL  {name}: {(tagsWritten ? "tags saved, rename failed: " : "")}{error.Message}");
+                        lines.Add($"FAIL  {name}: {(tagsWritten ? L.T("TagsSavedRenameFailed") : "")}{error.Message}");
                     }
                 }
                 Host.AppendOperationReport(lines[^1]);
             }
 
-            Report = $"Completed: {succeeded} succeeded, {failed} failed, {skipped} skipped\n" + string.Join('\n', lines);
+            Report = L.F("CompletedSucceededFailedSkippedHeader", succeeded, failed, skipped) + string.Join('\n', lines);
             if (succeeded > 0 && folder is not null) Host.SetLastOutputFolder(this, folder);
             RefreshState();
-            UpdateOperationProgress(1, $"Completed: {succeeded} succeeded, {failed} failed, {skipped} skipped");
+            UpdateOperationProgress(1, L.F("CompletedSucceededFailedSkipped", succeeded, failed, skipped));
         });
     }
 
@@ -249,5 +250,5 @@ public sealed class TagsViewModel : WorkspaceBase
         catch (ArgumentException) { return false; }
     }
 
-    private static string Files(int count) => count == 1 ? "1 file" : $"{count} files";
+    private static string Files(int count) => count == 1 ? L.T("OneFile") : L.F("FileCount", count);
 }

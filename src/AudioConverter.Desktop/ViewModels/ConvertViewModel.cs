@@ -4,6 +4,7 @@ using System.Windows.Input;
 using AudioConverter.Core.Models;
 using AudioConverter.Core.Paths;
 using AudioConverter.Desktop.Mvvm;
+using L = AudioConverter.Desktop.Localization.Localizer;
 
 namespace AudioConverter.Desktop.ViewModels;
 
@@ -32,7 +33,7 @@ public sealed class ConvertViewModel : WorkspaceBase
     /// <summary>Files waiting to be converted, in order.</summary>
     public ObservableCollection<QueueItem> Queue { get; } = [];
     public bool HasQueue => Queue.Count > 0;
-    public string QueueSummary => Queue.Count == 1 ? "1 file" : $"{Queue.Count} files";
+    public string QueueSummary => Queue.Count == 1 ? L.T("OneFile") : L.F("FileCount", Queue.Count);
     public RelayCommand ClearQueueCommand { get; }
     public RelayCommand<QueueItem> RemoveQueueItemCommand { get; }
 
@@ -45,7 +46,7 @@ public sealed class ConvertViewModel : WorkspaceBase
     }
 
     public override ICommand PrimaryCommand => ConvertCommand;
-    public override string PrimaryLabel => "Convert audio";
+    public override string PrimaryLabel => L.T("ConvertAudio");
     public RelayCommand ChooseFileCommand { get; }
     public RelayCommand ChooseFolderCommand { get; }
     public RelayCommand ChooseOutputCommand { get; }
@@ -98,9 +99,9 @@ public sealed class ConvertViewModel : WorkspaceBase
             var configuredOutput = OutputFolder;
             var configuredSuffix = Suffix;
             var options = CreateOptions(format);
-            Report = "Conversion started.";
+            Report = L.T("ConversionStarted");
             var items = Queue.ToArray();
-            foreach (var item in items) item.Update(QueueState.Waiting, "Waiting");
+            foreach (var item in items) item.Update(QueueState.Waiting, L.T("Waiting"));
             var results = new List<FileResult>();
             for (var index = 0; index < items.Length; index++)
             {
@@ -108,7 +109,7 @@ public sealed class ConvertViewModel : WorkspaceBase
                 var file = item.Path;
                 try
                 {
-                    item.Update(QueueState.Running, "Converting…");
+                    item.Update(QueueState.Running, L.T("Converting"));
                     _ = AudioFormats.FromPath(file);
                     var info = await Host.Probe!.ProbeAsync(file, ActiveOperationToken);
                     var directory = ResolveOutputDirectory(file, configuredOutput);
@@ -116,26 +117,26 @@ public sealed class ConvertViewModel : WorkspaceBase
                     var output = OutputPathBuilder.Build(file, directory, format, configuredSuffix);
                     var itemProgress = new Progress<double>(fraction =>
                     {
-                        item.Update(QueueState.Running, $"Converting {fraction:P0}", fraction * 100);
-                        UpdateOperationProgress((index + fraction) / items.Length, $"Converting {index + 1}/{items.Length}: {item.Name}");
+                        item.Update(QueueState.Running, L.F("ConvertingPercent", fraction), fraction * 100);
+                        UpdateOperationProgress((index + fraction) / items.Length, L.F("ConvertingItem", index + 1, items.Length, item.Name));
                     });
                     await Host.Audio!.ConvertAsync(file, output, options, info.DurationSeconds, itemProgress, ActiveOperationToken);
                     results.Add(new FileResult(file, output, null));
-                    item.Update(QueueState.Done, "Done", 100);
+                    item.Update(QueueState.Done, L.T("Done"), 100);
                     Host.AppendOperationReport($"OK  {file} -> {output}");
                     Host.SetLastOutputFolder(this, directory);
                 }
-                catch (OperationCanceledException) { item.Update(QueueState.Waiting, "Cancelled"); throw; }
+                catch (OperationCanceledException) { item.Update(QueueState.Waiting, L.T("Cancelled")); throw; }
                 catch (Exception error)
                 {
                     results.Add(new FileResult(file, null, error.Message));
-                    item.Update(QueueState.Failed, "Failed");
+                    item.Update(QueueState.Failed, L.T("Failed"));
                     Host.AppendOperationReport($"FAIL  {file}: {error.Message}");
                 }
             }
             var batch = new BatchResult(results);
-            Report = $"Completed: {batch.Succeeded} succeeded, {batch.Failed} failed\n" + string.Join('\n', results.Select(result => result.Succeeded ? $"OK  {Path.GetFileName(result.InputPath)} -> {result.OutputPath}" : $"FAIL  {Path.GetFileName(result.InputPath)}: {result.Error}"));
-            UpdateOperationProgress(1, $"Completed: {batch.Succeeded} succeeded, {batch.Failed} failed");
+            Report = L.F("CompletedSucceededFailedHeader", batch.Succeeded, batch.Failed) + string.Join('\n', results.Select(result => result.Succeeded ? $"OK  {Path.GetFileName(result.InputPath)} -> {result.OutputPath}" : $"FAIL  {Path.GetFileName(result.InputPath)}: {result.Error}"));
+            UpdateOperationProgress(1, L.F("CompletedSucceededFailed", batch.Succeeded, batch.Failed));
             await Host.SaveSettingsAsync(settings => settings with { LastOutputDirectory = configuredOutput }, ActiveOperationToken);
         });
     }

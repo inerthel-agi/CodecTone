@@ -1,5 +1,6 @@
 using AudioConverter.Core.Split;
 using AudioConverter.Desktop.Mvvm;
+using L = AudioConverter.Desktop.Localization.Localizer;
 
 namespace AudioConverter.Desktop.ViewModels;
 
@@ -27,7 +28,7 @@ public sealed class SplitTrackItem : ObservableObject
     /// <summary>The track as it will be written, with a fallback title when the title is blank.</summary>
     public AlbumTrack ToAlbumTrack() => new(
         Number,
-        string.IsNullOrWhiteSpace(Title) ? $"Track {Number:00}" : Title.Trim(),
+        string.IsNullOrWhiteSpace(Title) ? L.F("Track2", Number) : Title.Trim(),
         Performer,
         StartSeconds,
         EndSeconds);

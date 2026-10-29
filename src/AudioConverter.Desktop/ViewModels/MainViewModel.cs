@@ -4,6 +4,7 @@ using System.IO;
 using AudioConverter.Desktop.Mvvm;
 using AudioConverter.Desktop.Services;
 using AudioConverter.Infrastructure.Shell;
+using L = AudioConverter.Desktop.Localization.Localizer;
 
 namespace AudioConverter.Desktop.ViewModels;
 
@@ -45,8 +46,10 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         AboutItem = new NavItem("About", "GlyphAbout", About, Show);
         UpdateNavigation();
         ToggleThemeCommand = new AsyncRelayCommand(ToggleThemeAsync);
+        ToggleLanguageCommand = new AsyncRelayCommand(ToggleLanguageAsync);
         OpenOutputFolderCommand = new RelayCommand(() => Host.OpenFolder(Host.LastOutputFolder));
         Host.PropertyChanged += OnHostChanged;
+        L.Instance.LanguageChanged += OnLanguageChanged;
     }
 
     public WorkspaceHost Host { get; }
@@ -64,6 +67,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     public IReadOnlyList<NavItem> Tools { get; }
     public NavItem AboutItem { get; }
     public AsyncRelayCommand ToggleThemeCommand { get; }
+    public AsyncRelayCommand ToggleLanguageCommand { get; }
     public RelayCommand OpenOutputFolderCommand { get; }
 
     /// <summary>The page shown in the content area: a workspace or the About page.</summary>
@@ -72,14 +76,17 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     public bool IsToolWorkspace => ActiveWorkspace is not null;
     public bool ShowOpenOutputFolder => !Host.IsBusy && Host.LastOutputFolder is not null && Host.LastOutputWorkspace == ActiveWorkspace;
     public string Theme { get => theme; private set { if (Set(ref theme, value)) { Raise(nameof(ThemeButtonText)); Raise(nameof(ThemeButtonToolTip)); } } }
-    public string ThemeButtonText => $"Theme · {ThemeService.DisplayName(Theme)}";
-    public string ThemeButtonToolTip => $"Switch to {ThemeService.DisplayName(ThemeService.Next(Theme))}";
+    public string ThemeButtonText => L.F("ThemeButton", ThemeService.DisplayName(Theme));
+    public string ThemeButtonToolTip => L.F("SwitchTo", ThemeService.DisplayName(ThemeService.Next(Theme)));
+    public string LanguageButtonText => L.F("LanguageButton", L.Instance.LanguageName(L.Instance.Language));
+    public string LanguageButtonToolTip => L.F("SwitchTo", L.Instance.LanguageName(L.Next(L.Instance.Language)));
 
     public async Task InitializeAsync()
     {
         await Host.LoadSettingsAsync();
         if (Host.IsClosing) return;
         Theme = ThemeService.Normalize(Host.Settings.Theme);
+        L.Instance.SetLanguage(Host.Settings.Language);
         Convert.OutputFolder = Host.Settings.LastOutputDirectory ?? "";
         var preferences = Host.Settings.Preferences ?? new Dictionary<string, string>();
         foreach (var workspace in workspaces) workspace.LoadPreferences(preferences);
@@ -115,6 +122,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         if (disposed) return;
         disposed = true;
         Host.PropertyChanged -= OnHostChanged;
+        L.Instance.LanguageChanged -= OnLanguageChanged;
         Host.Dispose();
     }
 
@@ -137,6 +145,23 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         if (e.PropertyName is nameof(WorkspaceHost.IsBusy) or nameof(WorkspaceHost.LastOutputFolder)) Raise(nameof(ShowOpenOutputFolder));
     }
 
+    private void OnLanguageChanged()
+    {
+        foreach (var item in Tools.Append(AboutItem)) item.RefreshText();
+        Host.RefreshText();
+        Raise(string.Empty);
+    }
+
+    private async Task ToggleLanguageAsync()
+    {
+        try
+        {
+            L.Instance.SetLanguage(L.Next(L.Instance.Language));
+            await Host.SaveSettingsAsync(settings => settings with { Language = L.Instance.Language });
+        }
+        catch (Exception error) { Host.Dialogs.Error(L.F("UnableToSaveSettings", error.Message)); }
+    }
+
     private async Task ToggleThemeAsync()
     {
         try
@@ -145,7 +170,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             ThemeService.Apply(Theme);
             await Host.SaveSettingsAsync(settings => settings with { Theme = Theme });
         }
-        catch (Exception error) { Host.Dialogs.Error($"Unable to save theme settings: {error.Message}"); }
+        catch (Exception error) { Host.Dialogs.Error(L.F("UnableToSaveThemeSettings", error.Message)); }
     }
 }
 
@@ -153,13 +178,18 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 public sealed class NavItem(string label, string glyphKey, object page, Action<object> show) : ObservableObject
 {
     private bool isActive;
-    public string Label { get; } = label;
+    /// <summary>English name; it also names the label's resource key ("Split album" → "ItemSplitAlbum").</summary>
+    public string Name { get; } = label;
+    public string Label => Localization.LocalizeItemConverter.Localize(Name);
     public string GlyphKey { get; } = glyphKey;
     public object Page { get; } = page;
     public RelayCommand ShowCommand { get; } = new(() => show(page));
     public bool IsActive { get => isActive; set { if (Set(ref isActive, value)) Raise(nameof(State)); } }
     /// <summary>"Active" or "Inactive", the value the NavButton style triggers on.</summary>
     public string State => IsActive ? "Active" : "Inactive";
+    public void RefreshText() => Raise(nameof(Label));
+    /// <summary>Screen readers name the sidebar list item from this.</summary>
+    public override string ToString() => Label;
 }
 
 public sealed class AboutViewModel(WorkspaceHost host)
@@ -168,7 +198,7 @@ public sealed class AboutViewModel(WorkspaceHost host)
     public RelayCommand OpenGitHubCommand { get; } = new(() =>
     {
         try { ExternalLinkService.OpenGitHubProfile(); }
-        catch (Exception error) { host.Dialogs.Error($"Unable to open GitHub: {error.Message}"); }
+        catch (Exception error) { host.Dialogs.Error(L.F("UnableToOpenGitHub", error.Message)); }
     });
     public RelayCommand OpenDiagnosticsCommand { get; } = new(() =>
     {

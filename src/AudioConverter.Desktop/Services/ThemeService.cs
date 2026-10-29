@@ -10,7 +10,7 @@ public static class ThemeService
     /// <summary>Known theme name for a stored value, falling back to OLED for unknown values.</summary>
     public static string Normalize(string? theme) => Themes.FirstOrDefault(name => name.Equals(theme, StringComparison.OrdinalIgnoreCase)) ?? Themes[0];
     public static string Next(string? theme) => Themes[(Themes.ToList().IndexOf(Normalize(theme)) + 1) % Themes.Count];
-    public static string DisplayName(string? theme) => Normalize(theme) switch { "Oled" => "OLED", var name => name };
+    public static string DisplayName(string? theme) => Normalize(theme) switch { "Oled" => "OLED", var name => Localization.Localizer.TryT("Theme" + name, name) };
 
     public static void Apply(string theme)
     {

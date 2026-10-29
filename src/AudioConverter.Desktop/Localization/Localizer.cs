@@ -32,6 +32,9 @@ public sealed class Localizer : INotifyPropertyChanged
     /// <summary>Localized text, or <paramref name="fallback"/> when the key does not exist.</summary>
     public static string TryT(string key, string fallback) => Resources.GetString(key, Instance.culture) ?? fallback;
     public static string F(string key, params object?[] args) => string.Format(Instance.culture, Instance[key], args);
+    /// <summary>True when <paramref name="value"/> is the text of <paramref name="key"/> in any supported language.</summary>
+    public static bool IsText(string? value, string key) =>
+        Languages.Any(code => Resources.GetString(key, code is null ? SystemCulture : CultureInfo.GetCultureInfo(code)) == value);
 
     /// <summary>Known language code, or null (Windows) for anything else.</summary>
     public static string? Normalize(string? language) => Languages.FirstOrDefault(code => code is not null && code.Equals(language, StringComparison.OrdinalIgnoreCase));
@@ -59,17 +62,34 @@ public sealed class Localizer : INotifyPropertyChanged
 
 /// <summary>
 /// Shows a list value (enum or option string) in the current language: "High fidelity" looks up "ItemHighFidelity".
-/// Values without a key, such as format names, show unchanged.
+/// Values without a key, such as format names, show unchanged. Bound as a MultiBinding with
+/// <see cref="Localizer.Language"/> as second value, the text follows language changes.
 /// </summary>
-public sealed class LocalizeItemConverter : IValueConverter
+public sealed class LocalizeItemConverter : IValueConverter, IMultiValueConverter
 {
-    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    /// <summary>"High fidelity" → "ItemHighFidelity", TempoPitch → "ItemTempoPitch".</summary>
+    public static string Key(string text) =>
+        "Item" + new string(string.Concat(text.Split(' ').Select(word => word.Length == 0 ? word : char.ToUpperInvariant(word[0]) + word[1..])).Where(char.IsLetterOrDigit).ToArray());
+
+    public static string Localize(object? value)
     {
         var text = value?.ToString() ?? "";
-        return Localizer.TryT("Item" + new string(System.Globalization.CultureInfo.InvariantCulture.TextInfo.ToTitleCase(text).Where(char.IsLetterOrDigit).ToArray()), text);
+        return Localizer.TryT(Key(text), text);
     }
 
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) => Localize(value);
+    /// <summary>With a ConverterParameter prefix, values are (id, fallback text, language): "PresetDescription" + id.</summary>
+    public object Convert(object?[] values, Type targetType, object? parameter, CultureInfo culture) =>
+        parameter is string prefix ? Localizer.TryT(prefix + values[0], values.ElementAtOrDefault(1)?.ToString() ?? "") : Localize(values.FirstOrDefault());
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => Binding.DoNothing;
+    public object[] ConvertBack(object? value, Type[] targetTypes, object? parameter, CultureInfo culture) => [];
+}
+
+/// <summary>Formats the first value with the resource named by ConverterParameter; the language is the second value.</summary>
+public sealed class LocalizedFormatConverter : IMultiValueConverter
+{
+    public object Convert(object?[] values, Type targetType, object? parameter, CultureInfo culture) => Localizer.F((string)parameter!, values.FirstOrDefault());
+    public object[] ConvertBack(object? value, Type[] targetTypes, object? parameter, CultureInfo culture) => [];
 }
 
 /// <summary>XAML: <c>Text="{l:T ConvertTitle}"</c> binds to the localized string and follows language changes.</summary>

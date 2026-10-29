@@ -39,6 +39,7 @@
                 <StackPanel DockPanel.Dock="Bottom">
                     <ContentControl Content="{Binding AboutItem}" ContentTemplate="{StaticResource NavEntry}" Focusable="False" />
                     <Button Style="{StaticResource NavButton}" Command="{Binding ToggleThemeCommand}" AutomationProperties.Name="{Binding ThemeButtonText}" AutomationProperties.HelpText="{Binding ThemeButtonToolTip}" ToolTip="{Binding ThemeButtonToolTip}"><StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource Icon}" Text="{StaticResource GlyphTheme}" Width="28" /><TextBlock Text="{Binding ThemeButtonText}" /></StackPanel></Button>
+                    <Button Style="{StaticResource NavButton}" Command="{Binding ToggleLanguageCommand}" AutomationProperties.Name="{Binding LanguageButtonText}" AutomationProperties.HelpText="{Binding LanguageButtonToolTip}" ToolTip="{Binding LanguageButtonToolTip}"><StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource Icon}" Text="{StaticResource GlyphLanguage}" Width="28" /><TextBlock Text="{Binding LanguageButtonText}" /></StackPanel></Button>
                     <StackPanel Orientation="Horizontal" Margin="10,14,0,0" ToolTip="{l:T MediaNeverLeavesThisComputer}">
                         <TextBlock Style="{StaticResource Icon}" Text="{StaticResource GlyphLock}" FontSize="12" Foreground="{DynamicResource MutedTextBrush}" Width="28" />
                         <TextBlock Style="{StaticResource Caption}" Text="{l:T LocalNoTelemetry}" />

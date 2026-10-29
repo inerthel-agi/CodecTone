@@ -5,6 +5,7 @@ using AudioConverter.Core.Compression;
 using AudioConverter.Core.Models;
 using AudioConverter.Core.Paths;
 using AudioConverter.Desktop.Mvvm;
+using L = AudioConverter.Desktop.Localization.Localizer;
 
 namespace AudioConverter.Desktop.ViewModels;
 
@@ -19,7 +20,7 @@ public sealed class CompressViewModel : WorkspaceBase
     private bool compressionPreserveMetadata = true;
     private bool compressionOptimizeArtwork = true;
     private bool compressionOverwrite;
-    private string compressionEstimate = "Choose a source, then analyze it to estimate the output size.";
+    private string compressionEstimate = L.T("ChooseASourceToEstimateSize");
 
     public CompressViewModel(WorkspaceHost host) : base(host, "Compress", "ReportEmptyCompress")
     {
@@ -39,8 +40,8 @@ public sealed class CompressViewModel : WorkspaceBase
         foreach (var file in plan.Files)
         {
             var item = new QueueItem(file.Source.Path, file.Source.RelativePath) { Included = !file.ShouldSkip && !excluded.Contains(file.Source.Path) };
-            if (file.ShouldSkip) item.Update(QueueState.Skipped, $"Skip: {file.SkipReason}");
-            else item.Update(QueueState.Waiting, $"≈ {WorkspaceHost.FormatBytes(file.EstimatedOutputBytes)}");
+            if (file.ShouldSkip) item.Update(QueueState.Skipped, L.F("SkipReason", file.SkipReason));
+            else item.Update(QueueState.Waiting, L.F("EstimatedSize", WorkspaceHost.FormatBytes(file.EstimatedOutputBytes)));
             PlannedFiles.Add(item);
         }
         return PlannedFiles.ToDictionary(item => item.Path, StringComparer.OrdinalIgnoreCase);
@@ -50,7 +51,7 @@ public sealed class CompressViewModel : WorkspaceBase
     public ObservableCollection<QueueItem> PlannedFiles { get; } = [];
     public bool HasPlannedFiles => PlannedFiles.Count > 0;
     public override ICommand PrimaryCommand => CompressCommand;
-    public override string PrimaryLabel => "Compress audio";
+    public override string PrimaryLabel => L.T("CompressAudio");
     public AsyncRelayCommand ChooseCompressionFileCommand { get; }
     public AsyncRelayCommand ChooseCompressionFolderCommand { get; }
     public RelayCommand ChooseCompressionOutputCommand { get; }
@@ -103,6 +104,12 @@ public sealed class CompressViewModel : WorkspaceBase
     public override async Task AcceptDropAsync(IReadOnlyList<string> paths) =>
         await ChooseSourceAsync(paths.FirstOrDefault(item => File.Exists(item) || Directory.Exists(item)));
 
+    protected override void OnLanguageChanged()
+    {
+        compressionEstimate = Refreshed(compressionEstimate, "ChooseASourceToEstimateSize");
+        base.OnLanguageChanged();
+    }
+
     protected override void RaiseCommands()
     {
         ChooseCompressionFileCommand.RaiseCanExecuteChanged(); ChooseCompressionFolderCommand.RaiseCanExecuteChanged(); AnalyzeCompressionCommand.RaiseCanExecuteChanged(); CompressCommand.RaiseCanExecuteChanged();
@@ -124,10 +131,10 @@ public sealed class CompressViewModel : WorkspaceBase
             SyncPlannedFiles(preparation.Plan);
             CompressionEstimate = BuildCompressionEstimate(preparation.Plan);
             Report = preparation.Failures.Count == 0
-                ? "Analysis completed. No invalid files found."
+                ? L.T("AnalysisCompletedNoInvalidFilesFound")
                 : string.Join('\n', preparation.Failures);
-            Report += "\n" + string.Join('\n', preparation.ScanWarnings.Select(warning => "SKIP folder: " + warning));
-            UpdateOperationProgress(1, $"Compression analysis ready: {preparation.Plan.Files.Count} valid file(s)");
+            Report += "\n" + string.Join('\n', preparation.ScanWarnings.Select(warning => L.T("SKIPFolder") + warning));
+            UpdateOperationProgress(1, L.F("CompressionAnalysisReadyValidFileS", preparation.Plan.Files.Count));
         });
     }
 
@@ -135,7 +142,7 @@ public sealed class CompressViewModel : WorkspaceBase
     {
         await RunBusyAsync(async () =>
         {
-            Report = "Compression started.";
+            Report = L.T("CompressionStarted");
             var preparation = await PrepareCompressionAsync(0.1);
             var plan = preparation.Plan;
             var outputFormat = plan.Options.OutputFormat;
@@ -145,26 +152,26 @@ public sealed class CompressViewModel : WorkspaceBase
             var activeFiles = plan.Files.Where(file => !file.ShouldSkip && rows[file.Source.Path].Included).ToArray();
             if (activeFiles.Length == 0)
             {
-                Report = "No file to compress: every file was skipped or switched off.";
-                UpdateOperationProgress(1, "Nothing to compress.");
+                Report = L.T("NoFileToCompressEveryFile");
+                UpdateOperationProgress(1, L.T("NothingToCompress"));
                 return;
             }
 
             if (outputFormat.IsLossy()
                 && activeFiles.Any(file => file.Source.Format.IsLossy())
-                && !Dialogs.Confirm("Some source files are already lossy. Re-encoding them can reduce audio quality. Continue?"))
+                && !Dialogs.Confirm(L.T("SomeSourceFilesAreAlreadyLossy")))
             {
-                Host.Status = "Compression cancelled.";
+                Host.Status = L.T("CompressionCancelled");
                 Host.TimingText = "";
                 return;
             }
 
             var reportLines = new List<string>(preparation.Failures);
-            reportLines.AddRange(preparation.ScanWarnings.Select(warning => "SKIP folder: " + warning));
+            reportLines.AddRange(preparation.ScanWarnings.Select(warning => L.T("SKIPFolder") + warning));
             foreach (var skipped in plan.Files.Where(file => file.ShouldSkip))
                 reportLines.Add($"SKIP  {skipped.Source.RelativePath}: {skipped.SkipReason}");
             foreach (var excluded in plan.Files.Where(file => !file.ShouldSkip && !rows[file.Source.Path].Included))
-                reportLines.Add($"SKIP  {excluded.Source.RelativePath}: switched off in the list");
+                reportLines.Add(L.F("SKIPSwitchedOffInTheList", excluded.Source.RelativePath));
 
             var totalDuration = activeFiles.Sum(file => file.Source.DurationSeconds);
             var completedDuration = 0d;
@@ -178,16 +185,16 @@ public sealed class CompressViewModel : WorkspaceBase
                 var row = rows[file.Source.Path];
                 try
                 {
-                    row.Update(QueueState.Running, "Compressing…");
+                    row.Update(QueueState.Running, L.T("Compressing"));
                     var discovered = preparation.Discovered[file.Source.Path];
                     var output = OutputPathBuilder.BuildCompressed(file.Source.Path, discovered.SourceRoot, preparation.OutputRoot, outputFormat, outputSuffix);
                     Directory.CreateDirectory(Path.GetDirectoryName(output)!);
                     var baseDuration = completedDuration;
                     var progress = new Progress<double>(fraction =>
                     {
-                        row.Update(QueueState.Running, $"Compressing {fraction:P0}", fraction * 100);
+                        row.Update(QueueState.Running, L.F("CompressingPercent", fraction), fraction * 100);
                         var audioFraction = totalDuration <= 0 ? 1 : (baseDuration + fraction * file.Source.DurationSeconds) / totalDuration;
-                        UpdateOperationProgress(0.1 + audioFraction * 0.9, $"Compressing {activeIndex + 1}/{activeFiles.Length}: {Path.GetFileName(file.Source.Path)}");
+                        UpdateOperationProgress(0.1 + audioFraction * 0.9, L.F("CompressingItem", activeIndex + 1, activeFiles.Length, Path.GetFileName(file.Source.Path)));
                     });
                     await Host.Audio!.CompressAsync(file.Source.Path, output, plan.Options, plan.TargetAudioBitrateKbps, file.Source.DurationSeconds, file.Source.HasCoverArt, progress, ActiveOperationToken);
                     completedDuration += file.Source.DurationSeconds;
@@ -195,15 +202,15 @@ public sealed class CompressViewModel : WorkspaceBase
                     var written = new FileInfo(output).Length;
                     outputBytes += written;
                     succeeded++;
-                    row.Update(QueueState.Done, $"Done · {WorkspaceHost.FormatBytes(written)}", 100);
+                    row.Update(QueueState.Done, L.F("DoneWithSize", WorkspaceHost.FormatBytes(written)), 100);
                     reportLines.Add($"OK    {file.Source.RelativePath} -> {output}");
                 }
-                catch (OperationCanceledException) { row.Update(QueueState.Waiting, "Cancelled"); throw; }
+                catch (OperationCanceledException) { row.Update(QueueState.Waiting, L.T("Cancelled")); throw; }
                 catch (Exception error)
                 {
                     completedDuration += file.Source.DurationSeconds;
                     failed++;
-                    row.Update(QueueState.Failed, "Failed");
+                    row.Update(QueueState.Failed, L.T("Failed"));
                     reportLines.Add($"FAIL  {file.Source.RelativePath}: {error.Message}");
                 }
                 Host.AppendOperationReport(reportLines[^1]);
@@ -213,13 +220,13 @@ public sealed class CompressViewModel : WorkspaceBase
             var savings = CompressionSavings.Calculate(originalProcessedBytes, outputBytes);
             var skippedCount = plan.Files.Count(file => file.ShouldSkip);
             Report =
-                $"Completed: {succeeded} succeeded, {failed} failed, {skippedCount} skipped\n" +
-                $"Original processed: {WorkspaceHost.FormatBytes(originalProcessedBytes)}\n" +
-                $"Final: {WorkspaceHost.FormatBytes(outputBytes)}\n" +
-                $"Saved: {WorkspaceHost.FormatBytes(savings.SavedBytes)} ({savings.ReductionPercent:0.0}%)\n\n" +
+                L.F("CompletedSucceededFailedSkippedHeader", succeeded, failed, skippedCount) +
+                L.F("OriginalProcessed", WorkspaceHost.FormatBytes(originalProcessedBytes)) +
+                L.F("FinalSize", WorkspaceHost.FormatBytes(outputBytes)) +
+                L.F("SavedSize", WorkspaceHost.FormatBytes(savings.SavedBytes), savings.ReductionPercent) +
                 string.Join('\n', reportLines);
             if (succeeded > 0) Host.SetLastOutputFolder(this, preparation.OutputRoot);
-            UpdateOperationProgress(1, $"Compression completed: {succeeded} succeeded, {failed} failed, {skippedCount} skipped");
+            UpdateOperationProgress(1, L.F("CompressionCompletedSucceededFailedSkipp", succeeded, failed, skippedCount));
         });
     }
 
@@ -231,8 +238,8 @@ public sealed class CompressViewModel : WorkspaceBase
         var discovered = await Task.Run(() => CompressionFileDiscovery.Find(CompressionSourcePath, recursive: true,
                 onSkipped: scanWarnings.Add, cancellationToken: ActiveOperationToken)
             .Where(file => !IsPathInside(file.Path, outputRoot)).ToArray(), ActiveOperationToken);
-        foreach (var warning in scanWarnings) Host.AppendOperationReport("SKIP folder: " + warning);
-        if (discovered.Length == 0) throw new InvalidDataException("No supported audio file was found.");
+        foreach (var warning in scanWarnings) Host.AppendOperationReport(L.T("SKIPFolder") + warning);
+        if (discovered.Length == 0) throw new InvalidDataException(L.T("NoSupportedAudioFileWasFound"));
 
         var sources = new List<CompressionSource>();
         var failures = new List<string>();
@@ -246,9 +253,9 @@ public sealed class CompressViewModel : WorkspaceBase
             }
             catch (OperationCanceledException) { throw; }
             catch (Exception error) { failures.Add($"FAIL  {file.RelativePath}: {error.Message}"); }
-            UpdateOperationProgress((index + 1d) / discovered.Length * progressWeight, $"Analyzing {index + 1}/{discovered.Length}: {Path.GetFileName(file.Path)}");
+            UpdateOperationProgress((index + 1d) / discovered.Length * progressWeight, L.F("Analyzing", index + 1, discovered.Length, Path.GetFileName(file.Path)));
         }
-        if (sources.Count == 0) throw new InvalidDataException("No valid audio file remained after ffprobe validation.");
+        if (sources.Count == 0) throw new InvalidDataException(L.T("NoValidAudioAfterProbe"));
 
         var options = new CompressionOptions(CompressionFormat, ParseCompressionProfile(SelectedCompressionProfile), ParseTargetBytes(), CompressionOptimizeArtwork, CompressionPreserveMetadata, CompressionOverwrite);
         var plan = CompressionPlanner.Create(sources, options);
@@ -269,8 +276,8 @@ public sealed class CompressViewModel : WorkspaceBase
         if (!IsTargetSizeCompression) return null;
         if (!double.TryParse(CompressionTargetTotalMb, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.CurrentCulture, out var megabytes)
             && !double.TryParse(CompressionTargetTotalMb, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out megabytes))
-            throw new ArgumentException("Target total size must be a number in MiB.");
-        if (megabytes <= 0) throw new ArgumentException("Target total size must be positive.");
+            throw new ArgumentException(L.T("TargetTotalSizeMustBeA"));
+        if (megabytes <= 0) throw new ArgumentException(L.T("TargetTotalSizeMustBePositive"));
         return checked((long)(megabytes * 1024 * 1024));
     }
 
@@ -280,7 +287,7 @@ public sealed class CompressViewModel : WorkspaceBase
         "Balanced" => CompressionProfile.Balanced,
         "Maximum reduction" => CompressionProfile.MaximumReduction,
         "Target total size" => CompressionProfile.TargetTotalSize,
-        _ => throw new ArgumentException("Unknown compression profile."),
+        _ => throw new ArgumentException(L.T("UnknownCompressionProfile")),
     };
 
     private static string BuildCompressionEstimate(CompressionPlan plan)
@@ -288,8 +295,8 @@ public sealed class CompressViewModel : WorkspaceBase
         var saved = Math.Max(0, plan.OriginalTotalBytes - plan.EstimatedOutputBytes);
         var reduction = plan.OriginalTotalBytes == 0 ? 0 : saved * 100d / plan.OriginalTotalBytes;
         var skipped = plan.Files.Count(file => file.ShouldSkip);
-        var bitrate = plan.TargetAudioBitrateKbps is null ? "" : $" · {plan.TargetAudioBitrateKbps} kbps shared target";
-        return $"Original {WorkspaceHost.FormatBytes(plan.OriginalTotalBytes)} · estimated {WorkspaceHost.FormatBytes(plan.EstimatedOutputBytes)} · save {reduction:0.0}%{bitrate} · {skipped} skipped";
+        var bitrate = plan.TargetAudioBitrateKbps is null ? "" : L.F("KbpsSharedTarget", plan.TargetAudioBitrateKbps);
+        return L.F("OriginalEstimatedSaveSkipped", WorkspaceHost.FormatBytes(plan.OriginalTotalBytes), WorkspaceHost.FormatBytes(plan.EstimatedOutputBytes), reduction, bitrate, skipped);
     }
 
     private sealed record CompressionPreparation(

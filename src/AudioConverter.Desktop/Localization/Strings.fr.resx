@@ -1,0 +1,578 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ADAPTIVE" xml:space="preserve"><value>ADAPTATIF</value></data>
+  <data name="ARemixRackSupportsAtMost" xml:space="preserve"><value>Un rack de remix accepte au plus 16 effets.</value></data>
+  <data name="About" xml:space="preserve"><value>À propos</value></data>
+  <data name="AdaptiveAnalysisUnavailableStaticPresets" xml:space="preserve"><value>Analyse adaptative indisponible · les presets statiques restent utilisables ({0})</value></data>
+  <data name="Add" xml:space="preserve"><value>Ajouter</value></data>
+  <data name="AddAPresetOrEffectTo" xml:space="preserve"><value>Ajoutez un preset ou un effet pour commencer. La normalisation doit suivre les effets de gain ; les fondus restent à la fin.</value></data>
+  <data name="AddFiles" xml:space="preserve"><value>Ajouter des fichiers</value></data>
+  <data name="AddFolder" xml:space="preserve"><value>Ajouter un dossier</value></data>
+  <data name="AddTag" xml:space="preserve"><value>Ajouter un tag</value></data>
+  <data name="AddedFiles" xml:space="preserve"><value>Ajouté : {0}.</value></data>
+  <data name="Album" xml:space="preserve"><value>Album</value></data>
+  <data name="AlbumArtist" xml:space="preserve"><value>Artiste de l'album</value></data>
+  <data name="AlbumArtistForAllFiles" xml:space="preserve"><value>Artiste de l'album pour tous les fichiers</value></data>
+  <data name="AlbumFileSAlbumLoudnessLUFS" xml:space="preserve"><value>Album · {0} fichier(s) · niveau de l'album {1} LUFS · gain {2} dB</value></data>
+  <data name="AlbumForAllFiles" xml:space="preserve"><value>Album pour tous les fichiers</value></data>
+  <data name="AllFiles" xml:space="preserve"><value>Tous les fichiers</value></data>
+  <data name="AnalysisCompletedNoInvalidFilesFound" xml:space="preserve"><value>Analyse terminée. Aucun fichier invalide.</value></data>
+  <data name="AnalysisCompletedValidFileSFailed" xml:space="preserve"><value>Analyse terminée : {0} fichier(s) valide(s), {1} en échec.</value></data>
+  <data name="AnalysisReadyLUFSLURangeWidth" xml:space="preserve"><value>Analyse prête · {0:0.0} LUFS · plage {1:0.0} LU · largeur {2:0.00}</value></data>
+  <data name="AnalysisReadyValidFileS" xml:space="preserve"><value>Analyse prête : {0} fichier(s) valide(s)</value></data>
+  <data name="AnalysisStarted" xml:space="preserve"><value>Analyse lancée.</value></data>
+  <data name="Analyze" xml:space="preserve"><value>Analyser</value></data>
+  <data name="AnalyzeListsEachFileSLoudness" xml:space="preserve"><value>Analyser affiche le niveau, la crête réelle et le gain prévu de chaque fichier. Rien n'est encore écrit.</value></data>
+  <data name="AnalyzeMeasuresEveryFileBeforeThe" xml:space="preserve"><value>Analyser mesure chaque fichier avant d'afficher le plan.</value></data>
+  <data name="Analyzing" xml:space="preserve"><value>Analyse {0}/{1} : {2}</value></data>
+  <data name="AnalyzingArtwork" xml:space="preserve"><value>Analyse des pochettes {0}/{1} : {2}</value></data>
+  <data name="AnalyzingTheFullSongLocally" xml:space="preserve"><value>Analyse locale du morceau entier…</value></data>
+  <data name="AppliesRightAwayDoesNotAffect" xml:space="preserve"><value>S'applique tout de suite. N'affecte pas les exports.</value></data>
+  <data name="ApplyToAll" xml:space="preserve"><value>Appliquer à tous</value></data>
+  <data name="ApplyingAPresetWillReplaceThe" xml:space="preserve"><value>Appliquer un preset remplace le rack d'effets actuel. Continuer ?</value></data>
+  <data name="Artist" xml:space="preserve"><value>Artiste</value></data>
+  <data name="ArtistForAllFiles" xml:space="preserve"><value>Artiste pour tous les fichiers</value></data>
+  <data name="Artwork" xml:space="preserve"><value>Pochettes</value></data>
+  <data name="ArtworkAnalysisReadyAlbumS" xml:space="preserve"><value>Analyse des pochettes prête : {0} album(s)</value></data>
+  <data name="ArtworkExtractionCompletedExtractedFaile" xml:space="preserve"><value>Extraction des pochettes terminée : {0} extraite(s), {1} en échec, {2} ignorée(s)</value></data>
+  <data name="ArtworkExtractionStarted" xml:space="preserve"><value>Extraction des pochettes lancée.</value></data>
+  <data name="ArtworkPreviewDetails" xml:space="preserve"><value>{0} × {1} · {2}
+{3}</value></data>
+  <data name="ArtworkPreviewReady" xml:space="preserve"><value>Aperçu de la pochette prêt.</value></data>
+  <data name="Atmosphere" xml:space="preserve"><value>Ambiance</value></data>
+  <data name="AudioBitrate" xml:space="preserve"><value>Débit audio</value></data>
+  <data name="AudioFiles" xml:space="preserve"><value>Fichiers audio</value></data>
+  <data name="AudioQuality" xml:space="preserve"><value>Qualité audio</value></data>
+  <data name="BassPunch" xml:space="preserve"><value>Basses et punch</value></data>
+  <data name="Bit" xml:space="preserve"><value>{0} bits</value></data>
+  <data name="BitDepth" xml:space="preserve"><value>Profondeur de bits</value></data>
+  <data name="BitDepth124" xml:space="preserve"><value>Profondeur de bits · 1–24</value></data>
+  <data name="Browse" xml:space="preserve"><value>Parcourir</value></data>
+  <data name="BuildAnEffectRackPreviewTwenty" xml:space="preserve"><value>Montez un rack d'effets, écoutez vingt secondes, modifiez les métadonnées et exportez un morceau transformé.</value></data>
+  <data name="BuiltWith" xml:space="preserve"><value>Conçu avec</value></data>
+  <data name="CANCELLEDCompletedFilesAreListedAbove" xml:space="preserve"><value>CANCELLED. Les fichiers terminés sont listés au-dessus ; les autres n'ont pas été traités.</value></data>
+  <data name="CanAppearOnlyOnce" xml:space="preserve"><value>{0} ne peut apparaître qu'une fois.</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Annuler</value></data>
+  <data name="Cancelled" xml:space="preserve"><value>Annulé</value></data>
+  <data name="CancelledAfter" xml:space="preserve"><value>Annulé après {0}</value></data>
+  <data name="CappedByPeak" xml:space="preserve"><value>, limité par la crête</value></data>
+  <data name="CappedByTheDBTPCeilingNot" xml:space="preserve"><value>, limité par le plafond de {0} dBTP ({1} non atteint)</value></data>
+  <data name="CeilingDB" xml:space="preserve"><value>Plafond · dB</value></data>
+  <data name="ChangeFile" xml:space="preserve"><value>Changer de fichier</value></data>
+  <data name="ChangeFolder" xml:space="preserve"><value>Changer de dossier</value></data>
+  <data name="ChangeTheFormatAndQualityOf" xml:space="preserve"><value>Changez le format et la qualité d'un fichier, ou de tous les fichiers d'un dossier.</value></data>
+  <data name="ChangingIntensityReplacesYourEditedRack" xml:space="preserve"><value>Changer l'intensité remplace votre rack modifié. Continuer ?</value></data>
+  <data name="Channels" xml:space="preserve"><value>Canaux</value></data>
+  <data name="Channels2" xml:space="preserve"><value>{0} canaux</value></data>
+  <data name="ChooseAFileToCheckFor" xml:space="preserve"><value>Choisissez un fichier pour chercher la coupure d'une compression avec perte.</value></data>
+  <data name="ChooseASongToEnableAdaptive" xml:space="preserve"><value>Choisissez un morceau pour activer les presets adaptatifs.</value></data>
+  <data name="ChooseASourceAnalyzeMeasuresEvery" xml:space="preserve"><value>Choisissez une source. Analyser mesure chaque fichier ; Normaliser mesure d'abord si besoin.</value></data>
+  <data name="ChooseASourceToEstimateSize" xml:space="preserve"><value>Choisissez une source, puis analysez-la pour estimer la taille de sortie.</value></data>
+  <data name="ChooseASourceToFindArtwork" xml:space="preserve"><value>Choisissez une source, puis analysez-la pour trouver les pochettes intégrées.</value></data>
+  <data name="ChooseATargetLoudness" xml:space="preserve"><value>Choisissez un niveau sonore cible.</value></data>
+  <data name="ChooseAnAudioFileToGenerateWaveform" xml:space="preserve"><value>Choisissez un fichier audio pour afficher sa forme d'onde</value></data>
+  <data name="ChooseAnOutputFolder" xml:space="preserve"><value>Choisissez un dossier de sortie.</value></data>
+  <data name="ChooseCueSheet" xml:space="preserve"><value>Choisir un fichier cue</value></data>
+  <data name="ChooseFile" xml:space="preserve"><value>Choisir un fichier</value></data>
+  <data name="ChooseFiles" xml:space="preserve"><value>Choisir des fichiers</value></data>
+  <data name="ChooseFolder" xml:space="preserve"><value>Choisir un dossier</value></data>
+  <data name="ChooseOrDropAFileOr" xml:space="preserve"><value>Choisissez ou déposez un fichier ou un dossier.</value></data>
+  <data name="Clear" xml:space="preserve"><value>Effacer</value></data>
+  <data name="ClearList" xml:space="preserve"><value>Vider la liste</value></data>
+  <data name="ClipThreshold01" xml:space="preserve"><value>Seuil d'écrêtage · 0–1</value></data>
+  <data name="Codec" xml:space="preserve"><value>Codec</value></data>
+  <data name="CodecToneSavesTheResultYouChose" xml:space="preserve"><value>CodecTone enregistre le résultat choisi.</value></data>
+  <data name="ColorTexture" xml:space="preserve"><value>Couleur et texture</value></data>
+  <data name="Comment" xml:space="preserve"><value>Commentaire</value></data>
+  <data name="CompletedExtractedFailedSkippedOutput" xml:space="preserve"><value>Terminé : {0} extraite(s), {1} en échec, {2} ignorée(s)
+Sortie : {3}
+
+</value></data>
+  <data name="CompletedIn" xml:space="preserve"><value>Terminé en {0}</value></data>
+  <data name="CompletedSucceededFailed" xml:space="preserve"><value>Terminé : {0} réussi(s), {1} en échec</value></data>
+  <data name="CompletedSucceededFailedHeader" xml:space="preserve"><value>Terminé : {0} réussi(s), {1} en échec
+</value></data>
+  <data name="CompletedSucceededFailedSkipped" xml:space="preserve"><value>Terminé : {0} réussi(s), {1} en échec, {2} ignoré(s)</value></data>
+  <data name="CompletedSucceededFailedSkippedHeader" xml:space="preserve"><value>Terminé : {0} réussi(s), {1} en échec, {2} ignoré(s)
+</value></data>
+  <data name="Compress" xml:space="preserve"><value>Compresser</value></data>
+  <data name="CompressAudio" xml:space="preserve"><value>Compresser l'audio</value></data>
+  <data name="CompressTo" xml:space="preserve"><value>Compresser en</value></data>
+  <data name="Compressing" xml:space="preserve"><value>Compression…</value></data>
+  <data name="CompressingItem" xml:space="preserve"><value>Compression {0}/{1} : {2}</value></data>
+  <data name="CompressingPercent" xml:space="preserve"><value>Compression {0:P0}</value></data>
+  <data name="CompressionAnalysisReadyValidFileS" xml:space="preserve"><value>Analyse de compression prête : {0} fichier(s) valide(s)</value></data>
+  <data name="CompressionCancelled" xml:space="preserve"><value>Compression annulée.</value></data>
+  <data name="CompressionCompletedSucceededFailedSkipp" xml:space="preserve"><value>Compression terminée : {0} réussi(s), {1} en échec, {2} ignoré(s)</value></data>
+  <data name="CompressionFormat" xml:space="preserve"><value>Format de compression</value></data>
+  <data name="CompressionProfile" xml:space="preserve"><value>Profil de compression</value></data>
+  <data name="CompressionStarted" xml:space="preserve"><value>Compression lancée.</value></data>
+  <data name="Container" xml:space="preserve"><value>Conteneur</value></data>
+  <data name="ConversionStarted" xml:space="preserve"><value>Conversion lancée.</value></data>
+  <data name="Convert" xml:space="preserve"><value>Convertir</value></data>
+  <data name="ConvertAudio" xml:space="preserve"><value>Convertir l'audio</value></data>
+  <data name="Converting" xml:space="preserve"><value>Conversion…</value></data>
+  <data name="ConvertingItem" xml:space="preserve"><value>Conversion {0}/{1} : {2}</value></data>
+  <data name="ConvertingPercent" xml:space="preserve"><value>Conversion {0:P0}</value></data>
+  <data name="CoverArt" xml:space="preserve"><value>Pochette</value></data>
+  <data name="CoverImages" xml:space="preserve"><value>Images de pochette</value></data>
+  <data name="CoverPreview" xml:space="preserve"><value>Aperçu de la pochette</value></data>
+  <data name="CreatedByInerthelMITLicense" xml:space="preserve"><value>Créé par inerthel · Licence MIT</value></data>
+  <data name="CueSheet" xml:space="preserve"><value>Fichier cue</value></data>
+  <data name="CueSheetsCue" xml:space="preserve"><value>Fichiers cue|*.cue</value></data>
+  <data name="CustomLUFS" xml:space="preserve"><value>Personnalisé · LUFS</value></data>
+  <data name="CustomLoudnessTarget" xml:space="preserve"><value>Niveau sonore cible personnalisé</value></data>
+  <data name="CustomRackSelectedAddAndOrder" xml:space="preserve"><value>Rack personnalisé. Ajoutez et ordonnez les effets à la main.</value></data>
+  <data name="CustomTags" xml:space="preserve"><value>Tags personnalisés</value></data>
+  <data name="CustomTargetMustBeANumber" xml:space="preserve"><value>La cible personnalisée doit être un nombre en LUFS.</value></data>
+  <data name="Cut" xml:space="preserve"><value>Couper</value></data>
+  <data name="CutAudio" xml:space="preserve"><value>Couper l'audio</value></data>
+  <data name="CutCompleted" xml:space="preserve"><value>Découpe terminée : {0}</value></data>
+  <data name="CutCompletedOK" xml:space="preserve"><value>Découpe terminée : {0}
+OK  {1} -&gt; {2}</value></data>
+  <data name="CutSelectionWaveform" xml:space="preserve"><value>Forme d'onde de la sélection</value></data>
+  <data name="CutsGoInTheMiddleOf" xml:space="preserve"><value>Les coupes tombent au milieu de chaque silence. Les morceaux plus courts que le minimum rejoignent leur voisin.</value></data>
+  <data name="CuttingAudio" xml:space="preserve"><value>Découpe de l'audio…</value></data>
+  <data name="DB" xml:space="preserve"><value>{0} dB</value></data>
+  <data name="DBTP" xml:space="preserve"><value>{0} dBTP</value></data>
+  <data name="Date" xml:space="preserve"><value>Date</value></data>
+  <data name="DateForAllFiles" xml:space="preserve"><value>Date pour tous les fichiers</value></data>
+  <data name="DecaySeconds" xml:space="preserve"><value>Déclin · secondes</value></data>
+  <data name="DelayMs" xml:space="preserve"><value>Délai · ms</value></data>
+  <data name="DeletePreset" xml:space="preserve"><value>Supprimer le preset</value></data>
+  <data name="DeleteYourPreset" xml:space="preserve"><value>Supprimer votre preset « {0} » ?</value></data>
+  <data name="Destination" xml:space="preserve"><value>Destination</value></data>
+  <data name="Details" xml:space="preserve"><value>Détails</value></data>
+  <data name="DetectSilences" xml:space="preserve"><value>Détecter les silences</value></data>
+  <data name="DiagnosticsAreStoredLocallyAbout1" xml:space="preserve"><value>Les diagnostics restent sur ce PC (1 MiB maximum environ). Les rapports peuvent contenir des chemins de fichiers. Rien n'est envoyé.</value></data>
+  <data name="Disc" xml:space="preserve"><value>Disque</value></data>
+  <data name="Done" xml:space="preserve"><value>Terminé</value></data>
+  <data name="DoneWithSize" xml:space="preserve"><value>Terminé · {0}</value></data>
+  <data name="DragAHandleOrFocusThe" xml:space="preserve"><value>Faites glisser une poignée, ou sélectionnez la forme d'onde et utilisez les flèches (Maj pour 1 s, [ et ] pour choisir une poignée).</value></data>
+  <data name="DrawingSpectrogram" xml:space="preserve"><value>Tracé du spectrogramme…</value></data>
+  <data name="DriveDB" xml:space="preserve"><value>Drive · dB</value></data>
+  <data name="DropAnAudioFileOrA" xml:space="preserve"><value>Déposez un fichier audio ou un dossier ici</value></data>
+  <data name="DropAudioFilesOrFoldersHere" xml:space="preserve"><value>Déposez des fichiers audio ou des dossiers ici</value></data>
+  <data name="DropOneAudioFileHere" xml:space="preserve"><value>Déposez un fichier audio ici</value></data>
+  <data name="DropOneLongAudioFileHere" xml:space="preserve"><value>Déposez un long fichier audio ici</value></data>
+  <data name="DropOneSongHere" xml:space="preserve"><value>Déposez un morceau ici</value></data>
+  <data name="DropToLoad" xml:space="preserve"><value>Déposer pour charger</value></data>
+  <data name="Duration" xml:space="preserve"><value>Durée</value></data>
+  <data name="DurationSeconds" xml:space="preserve"><value>Durée · secondes</value></data>
+  <data name="EARRAPEProducesExtremeDistortionAndLoudn" xml:space="preserve"><value>EARRAPE produit une distorsion et un volume extrêmes. Baissez votre casque ou vos enceintes avant l'aperçu ou l'export. Une écoute à fort volume peut abîmer l'audition de façon permanente.</value></data>
+  <data name="EditTagsForManyFilesAt" xml:space="preserve"><value>Modifiez les tags de nombreux fichiers à la fois et renommez-les d'après leurs tags.</value></data>
+  <data name="EffectCount" xml:space="preserve"><value>{0} effet(s)</value></data>
+  <data name="EffectRack" xml:space="preserve"><value>Rack d'effets</value></data>
+  <data name="EffectToAdd" xml:space="preserve"><value>Effet à ajouter</value></data>
+  <data name="End" xml:space="preserve"><value>Fin</value></data>
+  <data name="EstimatedRemixLength" xml:space="preserve"><value>Durée estimée du remix</value></data>
+  <data name="EstimatedSize" xml:space="preserve"><value>≈ {0}</value></data>
+  <data name="EstimatingTimeRemaining" xml:space="preserve"><value>Estimation du temps restant…</value></data>
+  <data name="ExportCompletedSourceOutputEffectsDurati" xml:space="preserve"><value>Export terminé
+Source : {0}
+Sortie : {1}
+Effets : {2}
+Durée : {3}</value></data>
+  <data name="ExportRemix" xml:space="preserve"><value>Exporter le remix</value></data>
+  <data name="ExportReport" xml:space="preserve"><value>Exporter le rapport</value></data>
+  <data name="ExportingRemix" xml:space="preserve"><value>Export du remix…</value></data>
+  <data name="ExtractArtwork" xml:space="preserve"><value>Extraire les pochettes</value></data>
+  <data name="ExtractOneEmbeddedFrontCoverPer" xml:space="preserve"><value>Extrayez une pochette avant intégrée par album, au format d'origine ou en PNG, JPEG ou WebP.</value></data>
+  <data name="ExtractingArtwork" xml:space="preserve"><value>Extraction de la pochette {0}/{1} : {2} - {3}</value></data>
+  <data name="FFmpegIsRequiredInstallItFrom" xml:space="preserve"><value>FFmpeg est nécessaire. Installez-le d'abord depuis cette application.</value></data>
+  <data name="FFmpegReadyAllProcessingStaysLocal" xml:space="preserve"><value>FFmpeg prêt. Tout le traitement reste local.</value></data>
+  <data name="FFmpegWorksLocallyOnYourPC" xml:space="preserve"><value>FFmpeg travaille en local sur votre PC.</value></data>
+  <data name="FadeDurationInSeconds" xml:space="preserve"><value>Durée du fondu en secondes.</value></data>
+  <data name="FadeIn" xml:space="preserve"><value>Fondu d'entrée</value></data>
+  <data name="FadeOut" xml:space="preserve"><value>Fondu de sortie</value></data>
+  <data name="Failed" xml:space="preserve"><value>Échec</value></data>
+  <data name="Feedback009" xml:space="preserve"><value>Réinjection · 0–0.9</value></data>
+  <data name="FfprobeChecksStreamsAndMetadata" xml:space="preserve"><value>ffprobe vérifie les flux et les métadonnées.</value></data>
+  <data name="File" xml:space="preserve"><value>Fichier</value></data>
+  <data name="FileCount" xml:space="preserve"><value>{0} fichiers</value></data>
+  <data name="FileNamePattern" xml:space="preserve"><value>Modèle de nom de fichier</value></data>
+  <data name="FileNames" xml:space="preserve"><value>Noms de fichiers</value></data>
+  <data name="FileSize" xml:space="preserve"><value>Taille du fichier</value></data>
+  <data name="FileSuffix" xml:space="preserve"><value>Suffixe du fichier</value></data>
+  <data name="FileSuffixOptional" xml:space="preserve"><value>Suffixe du fichier · facultatif</value></data>
+  <data name="Files" xml:space="preserve"><value>Fichiers</value></data>
+  <data name="FilledFieldsAreCopiedToEvery" xml:space="preserve"><value>Les champs remplis sont copiés dans chaque fichier. Les champs vides restent inchangés.</value></data>
+  <data name="FinalSize" xml:space="preserve"><value>Final : {0}
+</value></data>
+  <data name="FoldersAddTheirFilesWithoutSubfolders" xml:space="preserve"><value>Un dossier ajoute ses fichiers, sans les sous-dossiers.</value></data>
+  <data name="FoldersAreScannedWithTheirSubfolders" xml:space="preserve"><value>Les dossiers sont parcourus avec leurs sous-dossiers. Une pochette avant est gardée par album.</value></data>
+  <data name="FoldersAreScannedWithTheirSubfolders2" xml:space="preserve"><value>Les dossiers sont parcourus avec leurs sous-dossiers. Rien ne change avant l'enregistrement.</value></data>
+  <data name="FoldersIncludeTheirSubfoldersAnalyzeRead" xml:space="preserve"><value>Les dossiers incluent leurs sous-dossiers. Analyser lit les fichiers sans les modifier.</value></data>
+  <data name="FrequencyHz" xml:space="preserve"><value>Fréquence · Hz</value></data>
+  <data name="Gain" xml:space="preserve"><value>Gain</value></data>
+  <data name="GainDB" xml:space="preserve"><value>Gain · dB</value></data>
+  <data name="Genre" xml:space="preserve"><value>Genre</value></data>
+  <data name="GenreForAllFiles" xml:space="preserve"><value>Genre pour tous les fichiers</value></data>
+  <data name="HEARINGWARNING" xml:space="preserve"><value>DANGER POUR L'AUDITION</value></data>
+  <data name="HEARINGWARNINGEARRAPECreatesExtremeDisto" xml:space="preserve"><value>DANGER POUR L'AUDITION : EARRAPE crée une distorsion et un volume extrêmes. Baissez le volume du casque ou des enceintes avant l'aperçu ou l'export. Une écoute à fort volume peut abîmer l'audition de façon permanente. Appliquer ce preset ?</value></data>
+  <data name="HighDB" xml:space="preserve"><value>Aigus · dB</value></data>
+  <data name="HowItWorks" xml:space="preserve"><value>Fonctionnement</value></data>
+  <data name="ImageFormat" xml:space="preserve"><value>Format d'image</value></data>
+  <data name="IncludeThisFile" xml:space="preserve"><value>Inclure ce fichier</value></data>
+  <data name="Inspect" xml:space="preserve"><value>Inspecter</value></data>
+  <data name="InstallFFmpeg" xml:space="preserve"><value>Installer FFmpeg</value></data>
+  <data name="ItemAbout" xml:space="preserve"><value>À propos</value></data>
+  <data name="ItemAlbum" xml:space="preserve"><value>Album</value></data>
+  <data name="ItemArtwork" xml:space="preserve"><value>Pochettes</value></data>
+  <data name="ItemBalanced" xml:space="preserve"><value>Équilibré</value></data>
+  <data name="ItemBass" xml:space="preserve"><value>Basses</value></data>
+  <data name="ItemBitCrusher" xml:space="preserve"><value>Bit crusher</value></data>
+  <data name="ItemCompress" xml:space="preserve"><value>Compresser</value></data>
+  <data name="ItemCompressor" xml:space="preserve"><value>Compresseur</value></data>
+  <data name="ItemConvert" xml:space="preserve"><value>Convertir</value></data>
+  <data name="ItemCueSheet" xml:space="preserve"><value>Fichier cue</value></data>
+  <data name="ItemCut" xml:space="preserve"><value>Couper</value></data>
+  <data name="ItemDistortion" xml:space="preserve"><value>Distorsion</value></data>
+  <data name="ItemEcho" xml:space="preserve"><value>Écho</value></data>
+  <data name="ItemEqualizer" xml:space="preserve"><value>Égaliseur</value></data>
+  <data name="ItemExport" xml:space="preserve"><value>Export</value></data>
+  <data name="ItemFadeIn" xml:space="preserve"><value>Fondu d'entrée</value></data>
+  <data name="ItemFadeOut" xml:space="preserve"><value>Fondu de sortie</value></data>
+  <data name="ItemHighFidelity" xml:space="preserve"><value>Haute fidélité</value></data>
+  <data name="ItemHighPass" xml:space="preserve"><value>Passe-haut</value></data>
+  <data name="ItemInspect" xml:space="preserve"><value>Inspecter</value></data>
+  <data name="ItemJpeg" xml:space="preserve"><value>JPEG</value></data>
+  <data name="ItemKeep" xml:space="preserve"><value>Conserver</value></data>
+  <data name="ItemLight" xml:space="preserve"><value>Léger</value></data>
+  <data name="ItemLoudnessNormalize" xml:space="preserve"><value>Normalisation du niveau</value></data>
+  <data name="ItemLowPass" xml:space="preserve"><value>Passe-bas</value></data>
+  <data name="ItemMaximumReduction" xml:space="preserve"><value>Réduction maximale</value></data>
+  <data name="ItemMedium" xml:space="preserve"><value>Moyen</value></data>
+  <data name="ItemMetadata" xml:space="preserve"><value>Métadonnées</value></data>
+  <data name="ItemNormalize" xml:space="preserve"><value>Normaliser</value></data>
+  <data name="ItemOriginal" xml:space="preserve"><value>Original</value></data>
+  <data name="ItemPerTrack" xml:space="preserve"><value>Par piste</value></data>
+  <data name="ItemPng" xml:space="preserve"><value>PNG</value></data>
+  <data name="ItemRemix" xml:space="preserve"><value>Remix</value></data>
+  <data name="ItemRemove" xml:space="preserve"><value>Supprimer</value></data>
+  <data name="ItemReplace" xml:space="preserve"><value>Remplacer</value></data>
+  <data name="ItemReverb" xml:space="preserve"><value>Réverbération</value></data>
+  <data name="ItemSilence" xml:space="preserve"><value>Silences</value></data>
+  <data name="ItemSoftLimiter" xml:space="preserve"><value>Limiteur doux</value></data>
+  <data name="ItemSplitAlbum" xml:space="preserve"><value>Découper un album</value></data>
+  <data name="ItemStereoWidth" xml:space="preserve"><value>Largeur stéréo</value></data>
+  <data name="ItemStrong" xml:space="preserve"><value>Fort</value></data>
+  <data name="ItemTags" xml:space="preserve"><value>Tags</value></data>
+  <data name="ItemTargetTotalSize" xml:space="preserve"><value>Taille totale cible</value></data>
+  <data name="ItemTempoPitch" xml:space="preserve"><value>Tempo / Hauteur</value></data>
+  <data name="ItemVolume" xml:space="preserve"><value>Volume</value></data>
+  <data name="ItemWebp" xml:space="preserve"><value>WebP</value></data>
+  <data name="Kbps" xml:space="preserve"><value>{0} kbps</value></data>
+  <data name="KbpsSharedTarget" xml:space="preserve"><value> · cible partagée de {0} kbps</value></data>
+  <data name="KeepMetadataAndCoverArt" xml:space="preserve"><value>Garder les métadonnées et la pochette</value></data>
+  <data name="KeepTitleArtistAlbumAndCover" xml:space="preserve"><value>Garder titre, artiste, album et pochette</value></data>
+  <data name="LUFS" xml:space="preserve"><value>{0} LUFS</value></data>
+  <data name="LanguageButton" xml:space="preserve"><value>Langue · {0}</value></data>
+  <data name="LanguageSystem" xml:space="preserve"><value>Système ({0})</value></data>
+  <data name="LeaveBlankToCreateACompressed" xml:space="preserve"><value>Laissez vide pour créer un dossier « compressed » qui garde l'arborescence source.</value></data>
+  <data name="LeaveBlankToCreateAConverted" xml:space="preserve"><value>Laissez vide pour créer un dossier « converted » à côté de chaque source.</value></data>
+  <data name="LeaveBlankToCreateANormalized" xml:space="preserve"><value>Laissez vide pour créer un dossier « normalized » qui garde l'arborescence source.</value></data>
+  <data name="LeaveBlankToCreateAnArtwork" xml:space="preserve"><value>Laissez vide pour créer un dossier « artwork » à côté de la source. Les images identiques sont ignorées ; les autres noms en double reçoivent _2, _3, etc.</value></data>
+  <data name="Length" xml:space="preserve"><value>Durée</value></data>
+  <data name="LimitSize648192Px" xml:space="preserve"><value>Taille max · 64–8192 px</value></data>
+  <data name="LimitedByTheCeiling" xml:space="preserve"><value> · {0} limité(s) par le plafond</value></data>
+  <data name="LimitedByTheTruePeakCeiling" xml:space="preserve"><value>limité par le plafond de crête réelle</value></data>
+  <data name="LoadASourceFileFirst" xml:space="preserve"><value>Chargez d'abord un fichier source.</value></data>
+  <data name="LocalAudioToolsForWindows" xml:space="preserve"><value>Outils audio locaux pour Windows.</value></data>
+  <data name="LocalNoTelemetry" xml:space="preserve"><value>Local · sans télémétrie</value></data>
+  <data name="LocalProcessing" xml:space="preserve"><value>Traitement local</value></data>
+  <data name="LookingForSilences" xml:space="preserve"><value>Recherche des silences…</value></data>
+  <data name="Loudness" xml:space="preserve"><value>Niveau sonore</value></data>
+  <data name="LoudnessTarget" xml:space="preserve"><value>Niveau sonore cible</value></data>
+  <data name="LoudnessTargetPreset" xml:space="preserve"><value>Préréglage de niveau cible</value></data>
+  <data name="LowDB" xml:space="preserve"><value>Graves · dB</value></data>
+  <data name="MP3FLACWAVOGGAACOr" xml:space="preserve"><value>MP3, FLAC, WAV, OGG, AAC ou M4A.</value></data>
+  <data name="MP3FLACWAVOGGAACOr2" xml:space="preserve"><value>MP3, FLAC, WAV, OGG, AAC ou M4A. Un fichier cue du même nom placé à côté est pris en compte.</value></data>
+  <data name="MakeupDB" xml:space="preserve"><value>Gain de compensation · dB</value></data>
+  <data name="Mastering" xml:space="preserve"><value>Mastering</value></data>
+  <data name="MatchTheLoudnessOfTracksOr" xml:space="preserve"><value>Alignez le niveau sonore de pistes ou d'albums entiers sur une cible comme -14 LUFS.</value></data>
+  <data name="MaximumArtworkDimensionMustBeBetween" xml:space="preserve"><value>La taille maximale de pochette doit être comprise entre 64 et 8192 pixels.</value></data>
+  <data name="Measuring" xml:space="preserve"><value>Mesure {0}/{1} : {2}</value></data>
+  <data name="MediaNeverLeavesThisComputer" xml:space="preserve"><value>Les médias ne quittent jamais cet ordinateur.</value></data>
+  <data name="MidDB" xml:space="preserve"><value>Médiums · dB</value></data>
+  <data name="MinSilenceS" xml:space="preserve"><value>Silence min. (s)</value></data>
+  <data name="MinTrackS" xml:space="preserve"><value>Piste min. (s)</value></data>
+  <data name="Mode" xml:space="preserve"><value>Mode</value></data>
+  <data name="Mono1" xml:space="preserve"><value>Mono (1)</value></data>
+  <data name="MoveBetweenMP3FLACWAVOGG" xml:space="preserve"><value>Convertissez entre MP3, FLAC, WAV, OGG, AAC et M4A avec des réglages de qualité explicites.</value></data>
+  <data name="MoveDown" xml:space="preserve"><value>Descendre</value></data>
+  <data name="MoveUp" xml:space="preserve"><value>Monter</value></data>
+  <data name="MyPresets" xml:space="preserve"><value>Mes presets</value></data>
+  <data name="NameThisRack" xml:space="preserve"><value>Nommer ce rack…</value></data>
+  <data name="NewPresetName" xml:space="preserve"><value>Nom du nouveau preset</value></data>
+  <data name="NoAudioOutputForPreview" xml:space="preserve"><value>Aucune sortie audio disponible pour l'aperçu (erreur waveOut {0}).</value></data>
+  <data name="NoAudioWasFoundOutsideThe" xml:space="preserve"><value>Aucun son trouvé hors des silences. Baissez le seuil et réessayez.</value></data>
+  <data name="NoCueSheetBesideThisFile" xml:space="preserve"><value>Aucun fichier cue à côté de ce fichier. Choisissez-en un, ou découpez par silences.</value></data>
+  <data name="NoEmbeddedArtworkWasFound" xml:space="preserve"><value>Aucune pochette intégrée trouvée.</value></data>
+  <data name="NoFileToCompressEveryFile" xml:space="preserve"><value>Aucun fichier à compresser : chaque fichier a été ignoré ou désactivé.</value></data>
+  <data name="NoSupportedAudioFileWasFound" xml:space="preserve"><value>Aucun fichier audio pris en charge trouvé.</value></data>
+  <data name="NoTagsFound" xml:space="preserve"><value>Aucun tag trouvé.</value></data>
+  <data name="NoTelemetry" xml:space="preserve"><value>Sans télémétrie</value></data>
+  <data name="NoTracksYetDetectSilencesTo" xml:space="preserve"><value>Aucune piste pour l'instant. Détectez les silences pour les prévoir.</value></data>
+  <data name="NoTracksYetLoadACue" xml:space="preserve"><value>Aucune piste pour l'instant. Chargez un fichier cue.</value></data>
+  <data name="NoValidAudioAfterMeasure" xml:space="preserve"><value>Aucun fichier audio valide après la mesure.</value></data>
+  <data name="NoValidAudioAfterProbe" xml:space="preserve"><value>Aucun fichier audio valide après la vérification ffprobe.</value></data>
+  <data name="NormalizationCancelled" xml:space="preserve"><value>Normalisation annulée.</value></data>
+  <data name="NormalizationCompletedSucceededFailedSki" xml:space="preserve"><value>Normalisation terminée : {0} réussi(s), {1} en échec, {2} ignoré(s)</value></data>
+  <data name="NormalizationMode" xml:space="preserve"><value>Mode de normalisation</value></data>
+  <data name="NormalizationStarted" xml:space="preserve"><value>Normalisation lancée.</value></data>
+  <data name="Normalize" xml:space="preserve"><value>Normaliser</value></data>
+  <data name="Normalizing" xml:space="preserve"><value>Normalisation {0}/{1} : {2}</value></data>
+  <data name="NormalizingReEncodesLossyFilesWhich" xml:space="preserve"><value>La normalisation réencode les fichiers avec perte, ce qui peut légèrement réduire la qualité. Continuer ?</value></data>
+  <data name="NotReported" xml:space="preserve"><value>Non indiqué</value></data>
+  <data name="NothingToCompress" xml:space="preserve"><value>Rien à compresser.</value></data>
+  <data name="OKLoudnessChange" xml:space="preserve"><value>OK  {0} : {1} → {2} LUFS ({3})</value></data>
+  <data name="OKSilentAlbumGain" xml:space="preserve"><value>OK  {0} : silencieux, gain d'album {1}</value></data>
+  <data name="OKSpectrogramRendered" xml:space="preserve"><value>OK  Spectrogramme généré</value></data>
+  <data name="OKSpectrogramSaved" xml:space="preserve"><value>OK  Spectrogramme enregistré : {0}</value></data>
+  <data name="OKTagsSaved" xml:space="preserve"><value>OK  {0} : tags enregistrés</value></data>
+  <data name="OKTruePeak" xml:space="preserve"><value>OK  {0} : {1}, crête réelle {2}</value></data>
+  <data name="OneFile" xml:space="preserve"><value>1 fichier</value></data>
+  <data name="OpenFolder" xml:space="preserve"><value>Ouvrir le dossier</value></data>
+  <data name="OpenLocalDiagnostics" xml:space="preserve"><value>Ouvrir les diagnostics locaux</value></data>
+  <data name="OpenOutputFolder" xml:space="preserve"><value>Ouvrir le dossier de sortie</value></data>
+  <data name="OpenTheInerthelGitHubProfile" xml:space="preserve"><value>Ouvrir le profil GitHub d'inerthel</value></data>
+  <data name="OperationCancelled" xml:space="preserve"><value>Opération annulée.</value></data>
+  <data name="Original" xml:space="preserve"><value>Original</value></data>
+  <data name="OriginalEstimatedSaveSkipped" xml:space="preserve"><value>Original {0} · estimé {1} · économie {2:0.0} %{3} · {4} ignoré(s)</value></data>
+  <data name="OriginalProcessed" xml:space="preserve"><value>Original traité : {0}
+</value></data>
+  <data name="Output" xml:space="preserve"><value>Sortie</value></data>
+  <data name="OutputFolder" xml:space="preserve"><value>Dossier de sortie</value></data>
+  <data name="OutputFormat" xml:space="preserve"><value>Format de sortie</value></data>
+  <data name="OutputKeepsEachFileSFormat" xml:space="preserve"><value>La sortie garde le format de chaque fichier. Les fichiers avec perte sont réencodés à leur débit d'origine, et les fichiers sans perte restent sans perte.</value></data>
+  <data name="Oversample116" xml:space="preserve"><value>Suréchantillonnage · 1–16</value></data>
+  <data name="OverwriteExistingFile" xml:space="preserve"><value>Remplacer le fichier existant</value></data>
+  <data name="OverwriteExistingFiles" xml:space="preserve"><value>Remplacer les fichiers existants</value></data>
+  <data name="PNGImagePng" xml:space="preserve"><value>Image PNG|*.png</value></data>
+  <data name="Pattern" xml:space="preserve"><value>Modèle</value></data>
+  <data name="Pause" xml:space="preserve"><value>Pause</value></data>
+  <data name="PeakLimited" xml:space="preserve"><value>, limité par la crête</value></data>
+  <data name="PerTrackBringsEachFileTo" xml:space="preserve"><value>Par piste amène chaque fichier à la cible. Album applique le même gain à tous les fichiers, donc les écarts de niveau restent identiques.</value></data>
+  <data name="PerTrackFileSTruePeak" xml:space="preserve"><value>Par piste · {0} fichier(s) · {1} · plafond de crête réelle {2} dBTP</value></data>
+  <data name="PickACategoryThenAPreset" xml:space="preserve"><value>Choisissez une catégorie, puis un preset. L'intensité ajuste chaque preset.</value></data>
+  <data name="PlayOriginal" xml:space="preserve"><value>Écouter l'original</value></data>
+  <data name="PlayRemix" xml:space="preserve"><value>Écouter le remix</value></data>
+  <data name="PlayingCutPreview" xml:space="preserve"><value>Lecture de l'aperçu de la découpe.</value></data>
+  <data name="PlayingOriginalExcerpt" xml:space="preserve"><value>Lecture de l'extrait original.</value></data>
+  <data name="PlayingRemixExcerpt" xml:space="preserve"><value>Lecture de l'extrait remixé.</value></data>
+  <data name="Preset" xml:space="preserve"><value>Preset</value></data>
+  <data name="PresetDescriptionAmbientWash" xml:space="preserve"><value>Un très long voile de réverbération sombre.</value></data>
+  <data name="PresetDescriptionBassBoost" xml:space="preserve"><value>Un fort renfort des basses autour de 90 Hz.</value></data>
+  <data name="PresetDescriptionBrightTone" xml:space="preserve"><value>Plus d'air et de brillance.</value></data>
+  <data name="PresetDescriptionCleanMaster" xml:space="preserve"><value>Légère cohésion à -14 LUFS.</value></data>
+  <data name="PresetDescriptionClearMix" xml:space="preserve"><value>Un mix plus propre et plus détaillé.</value></data>
+  <data name="PresetDescriptionClubMaster" xml:space="preserve"><value>Master fort et percutant pour le club.</value></data>
+  <data name="PresetDescriptionClubPunch" xml:space="preserve"><value>Bas du spectre compressé, fort et percutant.</value></data>
+  <data name="PresetDescriptionDarkTone" xml:space="preserve"><value>Aigus plus doux et plus sombres.</value></data>
+  <data name="PresetDescriptionDeMud" xml:space="preserve"><value>Retire les bas-médiums qui bourdonnent.</value></data>
+  <data name="PresetDescriptionDeepBass" xml:space="preserve"><value>Basses lourdes et aigus adoucis.</value></data>
+  <data name="PresetDescriptionDeepSlowed" xml:space="preserve"><value>Beaucoup plus lent et sombre, avec une longue queue.</value></data>
+  <data name="PresetDescriptionDreamyReverb" xml:space="preserve"><value>Une réverbération longue et douce, aux aigus feutrés.</value></data>
+  <data name="PresetDescriptionDynamicMaster" xml:space="preserve"><value>Garde la dynamique, -14 LUFS.</value></data>
+  <data name="PresetDescriptionEarrape" xml:space="preserve"><value>Distorsion et volume extrêmes.</value></data>
+  <data name="PresetDescriptionEchoSpace" xml:space="preserve"><value>Des échos répétés dans une pièce moyenne.</value></data>
+  <data name="PresetDescriptionHalfTime" xml:space="preserve"><value>Mi-vitesse, une octave plus bas.</value></data>
+  <data name="PresetDescriptionLightRoom" xml:space="preserve"><value>Une pièce courte et discrète.</value></data>
+  <data name="PresetDescriptionLoFi" xml:space="preserve"><value>Un peu lent, étouffé et poussiéreux.</value></data>
+  <data name="PresetDescriptionLoudMaster" xml:space="preserve"><value>Dense et fort à -9 LUFS.</value></data>
+  <data name="PresetDescriptionNightcore" xml:space="preserve"><value>Rapide, aigu et brillant, puis aligné en niveau.</value></data>
+  <data name="PresetDescriptionRadio" xml:space="preserve"><value>Radio AM compressée, à bande limitée.</value></data>
+  <data name="PresetDescriptionSlowedReverb" xml:space="preserve"><value>Plus lent et plus grave, avec une pièce douce.</value></data>
+  <data name="PresetDescriptionSoftVocal" xml:space="preserve"><value>Des voix douces avec un peu d'espace.</value></data>
+  <data name="PresetDescriptionSpedUpReverb" xml:space="preserve"><value>Plus rapide et plus aigu, avec une pièce légère.</value></data>
+  <data name="PresetDescriptionStreamingMaster" xml:space="preserve"><value>S'aligne sur le niveau courant du streaming.</value></data>
+  <data name="PresetDescriptionSubFocus" xml:space="preserve"><value>Sub-basses serrées, grondement retiré.</value></data>
+  <data name="PresetDescriptionTelephone" xml:space="preserve"><value>Son de téléphone, étroit et limité aux médiums.</value></data>
+  <data name="PresetDescriptionVintageWarm" xml:space="preserve"><value>Graves chauds et aigus arrondis.</value></data>
+  <data name="PresetDescriptionVocalBoost" xml:space="preserve"><value>Met en avant les médiums, là où sont les voix.</value></data>
+  <data name="PresetDescriptionVocalPresence" xml:space="preserve"><value>Des voix plus claires et plus stables.</value></data>
+  <data name="PresetDescriptionWarmBass" xml:space="preserve"><value>Un léger renfort du bas du spectre.</value></data>
+  <data name="PresetDescriptionWideHall" xml:space="preserve"><value>Une grande salle et une image stéréo plus large.</value></data>
+  <data name="PresetDescriptionWideMaster" xml:space="preserve"><value>Cohérent et plus large, -14 LUFS.</value></data>
+  <data name="PresetIntensity" xml:space="preserve"><value>Intensité du preset</value></data>
+  <data name="PresetSaved" xml:space="preserve"><value>Preset enregistré : {0}</value></data>
+  <data name="Presets" xml:space="preserve"><value>Presets</value></data>
+  <data name="PresetsUseSafeStaticDefaultsUntil" xml:space="preserve"><value>Les presets utilisent des valeurs fixes sûres tant qu'aucun morceau n'est analysé.</value></data>
+  <data name="PreviewCover" xml:space="preserve"><value>Aperçu de la pochette</value></data>
+  <data name="PreviewCut" xml:space="preserve"><value>Écouter la découpe</value></data>
+  <data name="PreviewStartsAt" xml:space="preserve"><value>L'aperçu commence à</value></data>
+  <data name="PreviewStopped" xml:space="preserve"><value>Aperçu arrêté.</value></data>
+  <data name="PreviewVolume" xml:space="preserve"><value>Volume de l'aperçu</value></data>
+  <data name="PreviewWindow20Seconds" xml:space="preserve"><value>Fenêtre d'aperçu · 20 secondes</value></data>
+  <data name="Privacy" xml:space="preserve"><value>Confidentialité</value></data>
+  <data name="Process" xml:space="preserve"><value>Traitement</value></data>
+  <data name="READYStreamX" xml:space="preserve"><value>READY {0} - {1} · flux {2} · {3} · {4}x{5}</value></data>
+  <data name="Rate050200" xml:space="preserve"><value>Vitesse · 0.50–2.00×</value></data>
+  <data name="Ratio110" xml:space="preserve"><value>Ratio · 1–10</value></data>
+  <data name="RawReport" xml:space="preserve"><value>Rapport brut</value></data>
+  <data name="ReEncodingLossyFilesAsksFor" xml:space="preserve"><value>Réencoder des fichiers avec perte demande une confirmation, car la qualité peut baisser.</value></data>
+  <data name="ReadingAudio" xml:space="preserve"><value>Lecture de l'audio…</value></data>
+  <data name="ReadingAudioAndGeneratingWaveform" xml:space="preserve"><value>Lecture de l'audio et création de la forme d'onde…</value></data>
+  <data name="ReadingRemixSourceAndWaveform" xml:space="preserve"><value>Lecture de la source du remix et de la forme d'onde…</value></data>
+  <data name="ReadingSourceBeforeAdaptiveAnalysis" xml:space="preserve"><value>Lecture de la source avant l'analyse adaptative…</value></data>
+  <data name="ReadingTags" xml:space="preserve"><value>Lecture des tags {0}/{1} : {2}</value></data>
+  <data name="Ready" xml:space="preserve"><value>Prêt</value></data>
+  <data name="ReadyToCut" xml:space="preserve"><value>Prêt à couper {0}</value></data>
+  <data name="ReadyToSplit" xml:space="preserve"><value>Prêt à découper {0}</value></data>
+  <data name="ReduceFileSizeWithAQuality" xml:space="preserve"><value>Réduisez la taille des fichiers avec un profil de qualité ou un budget de taille totale. Les dossiers incluent leurs sous-dossiers.</value></data>
+  <data name="ReduceFileSizeWithQualityProfiles" xml:space="preserve"><value>Réduisez la taille des fichiers avec des profils de qualité, des budgets cibles et le traitement récursif des dossiers.</value></data>
+  <data name="RemainingFinishesAround" xml:space="preserve"><value>{0} restant · fin vers {1:HH:mm}</value></data>
+  <data name="Remix" xml:space="preserve"><value>Remix</value></data>
+  <data name="RemixExportCancelled" xml:space="preserve"><value>Export du remix annulé.</value></data>
+  <data name="RemixExported" xml:space="preserve"><value>Remix exporté : {0}</value></data>
+  <data name="RemixInspector" xml:space="preserve"><value>Inspecteur du remix</value></data>
+  <data name="RemixPreviewStopped" xml:space="preserve"><value>Aperçu du remix arrêté.</value></data>
+  <data name="RemixPreviewWindow" xml:space="preserve"><value>Fenêtre d'aperçu du remix</value></data>
+  <data name="RemixSourceReady" xml:space="preserve"><value>Source du remix prête : {0}</value></data>
+  <data name="RemixWorksOnOneFileAt" xml:space="preserve"><value>Remix traite un fichier à la fois.</value></data>
+  <data name="Remove" xml:space="preserve"><value>Retirer</value></data>
+  <data name="RemoveEffect" xml:space="preserve"><value>Retirer l'effet</value></data>
+  <data name="RemoveFromTheQueue" xml:space="preserve"><value>Retirer de la file</value></data>
+  <data name="RemoveTag" xml:space="preserve"><value>Retirer le tag</value></data>
+  <data name="RenameFilesFromTheirTags" xml:space="preserve"><value>Renommer les fichiers d'après leurs tags</value></data>
+  <data name="Rendering20SecondRemixPreview" xml:space="preserve"><value>Rendu de l'aperçu de 20 secondes…</value></data>
+  <data name="RenderingLocalPreview" xml:space="preserve"><value>Rendu de l'aperçu local…</value></data>
+  <data name="RenderingSpectrogramWithLegend" xml:space="preserve"><value>Rendu du spectrogramme avec légende…</value></data>
+  <data name="Replace" xml:space="preserve"><value>Remplacer</value></data>
+  <data name="ReplaceYourPreset" xml:space="preserve"><value>Remplacer votre preset « {0} » ?</value></data>
+  <data name="Report" xml:space="preserve"><value>Rapport</value></data>
+  <data name="ReportEmptyArtwork" xml:space="preserve"><value>Aucune extraction de pochette pour l'instant.</value></data>
+  <data name="ReportEmptyCompress" xml:space="preserve"><value>Aucune compression pour l'instant.</value></data>
+  <data name="ReportEmptyConvert" xml:space="preserve"><value>Aucune conversion pour l'instant.</value></data>
+  <data name="ReportEmptyCut" xml:space="preserve"><value>Aucune découpe pour l'instant.</value></data>
+  <data name="ReportEmptyGeneric" xml:space="preserve"><value>Rien n'a encore été lancé.</value></data>
+  <data name="ReportEmptyRemix" xml:space="preserve"><value>Aucun remix exporté pour l'instant.</value></data>
+  <data name="ResetRack" xml:space="preserve"><value>Réinitialiser le rack</value></data>
+  <data name="Resume" xml:space="preserve"><value>Reprendre</value></data>
+  <data name="RoomSize01" xml:space="preserve"><value>Taille de la pièce · 0–1</value></data>
+  <data name="SKIPFolder" xml:space="preserve"><value>SKIP dossier : </value></data>
+  <data name="SKIPIdenticalImageAlreadyExistsAt" xml:space="preserve"><value>SKIP  {0} - {1} : une image identique existe déjà : {2}</value></data>
+  <data name="SKIPNoChanges" xml:space="preserve"><value>SKIP  {0} : aucun changement</value></data>
+  <data name="SKIPNotFound" xml:space="preserve"><value>SKIP  {0} : introuvable</value></data>
+  <data name="SKIPSwitchedOffInTheList" xml:space="preserve"><value>SKIP  {0} : désactivé dans la liste</value></data>
+  <data name="SKIPUnsupportedFormat" xml:space="preserve"><value>SKIP  {0} : format non pris en charge</value></data>
+  <data name="STATIC" xml:space="preserve"><value>STATIQUE</value></data>
+  <data name="SampleRate" xml:space="preserve"><value>Fréquence d'échantillonnage</value></data>
+  <data name="SampleReduction1250" xml:space="preserve"><value>Réduction d'échantillons · 1–250</value></data>
+  <data name="SaveAs" xml:space="preserve"><value>Enregistrer en</value></data>
+  <data name="SaveAsPreset" xml:space="preserve"><value>Enregistrer comme preset</value></data>
+  <data name="SaveOneEmbeddedFrontCoverPer" xml:space="preserve"><value>Enregistrez une pochette avant intégrée par album, telle quelle ou convertie.</value></data>
+  <data name="SaveReport" xml:space="preserve"><value>Enregistrer le rapport</value></data>
+  <data name="SaveSpectrogram" xml:space="preserve"><value>Enregistrer le spectrogramme</value></data>
+  <data name="SaveTags" xml:space="preserve"><value>Enregistrer les tags</value></data>
+  <data name="SavedSize" xml:space="preserve"><value>Économisé : {0} ({1:0.0} %)
+
+</value></data>
+  <data name="Saving" xml:space="preserve"><value>Enregistrement {0}/{1} : {2}</value></data>
+  <data name="ScannedAudioFileSAlbumCover" xml:space="preserve"><value>{0} fichier(s) audio parcouru(s) · {1} pochette(s) prête(s) · {2} ignorée(s) ou invalide(s)</value></data>
+  <data name="SeeAFileSSpectrogramAnd" xml:space="preserve"><value>Affichez le spectrogramme et les détails d'un fichier, et repérez les fichiers sans perte issus de sources avec perte.</value></data>
+  <data name="Select" xml:space="preserve"><value>Sélectionner</value></data>
+  <data name="SelectAnAlbumAndPreviewIts" xml:space="preserve"><value>Sélectionnez un album et affichez sa pochette.</value></data>
+  <data name="SelectAnExactWaveformRangeAdd" xml:space="preserve"><value>Sélectionnez une plage précise de la forme d'onde, ajoutez des fondus et écoutez le résultat avant l'export.</value></data>
+  <data name="SelectPartOfATrackAdd" xml:space="preserve"><value>Sélectionnez une partie d'une piste, ajoutez des fondus, écoutez-la, puis exportez-la.</value></data>
+  <data name="SelectPreviewCoverToLoadThe" xml:space="preserve"><value>Cliquez sur Aperçu de la pochette pour charger l'image.</value></data>
+  <data name="Selection" xml:space="preserve"><value>Sélection</value></data>
+  <data name="SelectionLength" xml:space="preserve"><value>Durée de la sélection</value></data>
+  <data name="SetForAllFiles" xml:space="preserve"><value>Définir pour tous les fichiers</value></data>
+  <data name="ShapeOneSongWithPresetsOr" xml:space="preserve"><value>Transformez un morceau avec des presets ou votre propre rack d'effets, puis exportez-le avec de nouvelles métadonnées.</value></data>
+  <data name="ShrinkLargeCoverArtMax1200" xml:space="preserve"><value>Réduire les grandes pochettes · 1200 px max</value></data>
+  <data name="SilenceAnalysisSilencesFoundTracksPlanne" xml:space="preserve"><value>Analyse des silences : {0} silences trouvés, {1} pistes prévues.</value></data>
+  <data name="Silent" xml:space="preserve"><value> · {0} silencieux</value></data>
+  <data name="Silent2" xml:space="preserve"><value>silencieux</value></data>
+  <data name="SkipReason" xml:space="preserve"><value>Ignoré : {0}</value></data>
+  <data name="Skipped" xml:space="preserve"><value>ignoré</value></data>
+  <data name="SomeSourceFilesAreAlreadyLossy" xml:space="preserve"><value>Certains fichiers source sont déjà avec perte. Les réencoder peut réduire la qualité audio. Continuer ?</value></data>
+  <data name="Source" xml:space="preserve"><value>Source</value></data>
+  <data name="Spectrogram" xml:space="preserve"><value>Spectrogramme</value></data>
+  <data name="SpectrogramReady" xml:space="preserve"><value>Spectrogramme prêt : {0}</value></data>
+  <data name="SpectrogramSaved" xml:space="preserve"><value>Spectrogramme enregistré : {0}</value></data>
+  <data name="SpeedPitch" xml:space="preserve"><value>Vitesse et hauteur</value></data>
+  <data name="SplitAlbum" xml:space="preserve"><value>Découper un album</value></data>
+  <data name="SplitCompletedOfTracks" xml:space="preserve"><value>Découpe terminée : {0} pistes sur {1}.</value></data>
+  <data name="SplitCompletedWrittenFailed" xml:space="preserve"><value>Découpe terminée : {0} écrite(s), {1} en échec.
+</value></data>
+  <data name="SplitOneLongRecordingIntoTracks" xml:space="preserve"><value>Découpez un long enregistrement en pistes à partir d'un fichier cue ou des silences.</value></data>
+  <data name="SplitPatternHint" xml:space="preserve"><value>{track:00} est le numéro de piste et {title} le titre. Les caractères interdits par Windows dans les noms de fichiers sont retirés.</value></data>
+  <data name="SplitStarted" xml:space="preserve"><value>Découpe lancée.</value></data>
+  <data name="SplitTracks" xml:space="preserve"><value>Découper les pistes</value></data>
+  <data name="Splitting" xml:space="preserve"><value>Découpe {0}/{1} : {2}</value></data>
+  <data name="Start" xml:space="preserve"><value>Début</value></data>
+  <data name="Stereo2" xml:space="preserve"><value>Stéréo (2)</value></data>
+  <data name="Stop" xml:space="preserve"><value>Arrêter</value></data>
+  <data name="StopPreview" xml:space="preserve"><value>Arrêter l'aperçu</value></data>
+  <data name="StoppedAfter" xml:space="preserve"><value>Arrêté après {0}</value></data>
+  <data name="SwitchAFileOffToLeave" xml:space="preserve"><value>Désactivez un fichier pour l'exclure de cette compression.</value></data>
+  <data name="SwitchTo" xml:space="preserve"><value>Passer à {0}</value></data>
+  <data name="TagSaveStarted" xml:space="preserve"><value>Enregistrement des tags lancé.</value></data>
+  <data name="Tags" xml:space="preserve"><value>Tags</value></data>
+  <data name="TagsAndEmbeddedCoverArtAre" xml:space="preserve"><value>Les tags et la pochette intégrée sont copiés quand la destination les accepte.</value></data>
+  <data name="TagsSavedRenameFailed" xml:space="preserve"><value>tags enregistrés, échec du renommage : </value></data>
+  <data name="TargetLUFS" xml:space="preserve"><value>cible {0} LUFS</value></data>
+  <data name="TargetLUFS2" xml:space="preserve"><value>Cible · LUFS</value></data>
+  <data name="TargetTotalSizeMiB" xml:space="preserve"><value>Taille totale cible · MiB</value></data>
+  <data name="TargetTotalSizeMustBeA" xml:space="preserve"><value>La taille totale cible doit être un nombre en MiB.</value></data>
+  <data name="TargetTotalSizeMustBePositive" xml:space="preserve"><value>La taille totale cible doit être positive.</value></data>
+  <data name="TextReportTxt" xml:space="preserve"><value>Rapport texte|*.txt</value></data>
+  <data name="TheOutputFolderDoesNotExist" xml:space="preserve"><value>Le dossier de sortie n'existe pas encore.</value></data>
+  <data name="TheSelectedOutputFormatDoesNot" xml:space="preserve"><value>Le format de sortie choisi n'accepte pas de pochette intégrée ici. Exporter sans la pochette ?</value></data>
+  <data name="TheSourceIsAnalyzedAsSoon" xml:space="preserve"><value>La source est analysée dès que vous la choisissez.</value></data>
+  <data name="ThemeButton" xml:space="preserve"><value>Thème · {0}</value></data>
+  <data name="ThemeGlass" xml:space="preserve"><value>Verre</value></data>
+  <data name="ThemeWhite" xml:space="preserve"><value>Clair</value></data>
+  <data name="ThereAreNoTracksToSplit" xml:space="preserve"><value>Il n'y a aucune piste à découper.</value></data>
+  <data name="ThresholdDB" xml:space="preserve"><value>Seuil (dB)</value></data>
+  <data name="ThresholdDB2" xml:space="preserve"><value>Seuil · dB</value></data>
+  <data name="Time" xml:space="preserve"><value>Temps</value></data>
+  <data name="Title" xml:space="preserve"><value>Titre</value></data>
+  <data name="ToRename" xml:space="preserve"><value> · {0} à renommer</value></data>
+  <data name="TokensTitleArtistAlbumAlbumartistTrack" xml:space="preserve"><value>Jetons : {title} {artist} {album} {albumartist} {track} {track:00} {disc} {date} {genre}. Le dossier et l'extension restent identiques.</value></data>
+  <data name="Track" xml:space="preserve"><value>Piste</value></data>
+  <data name="Track2" xml:space="preserve"><value>Piste {0:00}</value></data>
+  <data name="TrackLayout" xml:space="preserve"><value>Découpage des pistes</value></data>
+  <data name="TrackTitle" xml:space="preserve"><value>Titre de la piste</value></data>
+  <data name="Tracks" xml:space="preserve"><value>Pistes</value></data>
+  <data name="Tracks2" xml:space="preserve"><value>{0} · {1} pistes</value></data>
+  <data name="TracksInTotal" xml:space="preserve"><value>{0} pistes · {1} au total</value></data>
+  <data name="TracksPlannedFromTheSilences" xml:space="preserve"><value>{0} pistes prévues à partir des silences.</value></data>
+  <data name="TruePeak" xml:space="preserve"><value>Crête réelle</value></data>
+  <data name="TruePeakCeiling" xml:space="preserve"><value>Plafond de crête réelle</value></data>
+  <data name="TruePeakCeilingDBTP" xml:space="preserve"><value>Plafond crête · dBTP</value></data>
+  <data name="TruePeakCeilingMustBeA" xml:space="preserve"><value>Le plafond de crête réelle doit être un nombre en dBTP.</value></data>
+  <data name="TwoTracksWouldGetTheSame" xml:space="preserve"><value>Deux pistes auraient le même nom de fichier. Changez le modèle de nom.</value></data>
+  <data name="UnableToOpenGitHub" xml:space="preserve"><value>Impossible d'ouvrir GitHub : {0}</value></data>
+  <data name="UnableToSavePresets" xml:space="preserve"><value>Impossible d'enregistrer les presets : {0}</value></data>
+  <data name="UnableToSaveSettings" xml:space="preserve"><value>Impossible d'enregistrer les réglages : {0}</value></data>
+  <data name="UnableToSaveThemeSettings" xml:space="preserve"><value>Impossible d'enregistrer le thème : {0}</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Inconnu</value></data>
+  <data name="UnknownCompressionProfile" xml:space="preserve"><value>Profil de compression inconnu.</value></data>
+  <data name="UnknownLoudnessPreset" xml:space="preserve"><value>Préréglage de niveau inconnu.</value></data>
+  <data name="Validate" xml:space="preserve"><value>Valider</value></data>
+  <data name="Value" xml:space="preserve"><value>Valeur</value></data>
+  <data name="VerdictFullBand" xml:space="preserve"><value>Audio pleine bande jusqu'à {0} kHz.</value></data>
+  <data name="VerdictLikelyLossySource" xml:space="preserve"><value>Probablement issu d'une source avec perte : l'énergie s'arrête vers {0} kHz.</value></data>
+  <data name="VerdictLossyFile" xml:space="preserve"><value>Fichier avec perte, énergie jusqu'à {0} kHz.</value></data>
+  <data name="VerdictNoCutoff" xml:space="preserve"><value>Aucune coupure nette trouvée.</value></data>
+  <data name="Version" xml:space="preserve"><value>Version</value></data>
+  <data name="ViewOnGitHub" xml:space="preserve"><value>Voir sur GitHub</value></data>
+  <data name="VocalClarity" xml:space="preserve"><value>Voix et clarté</value></data>
+  <data name="Volume" xml:space="preserve"><value>Volume</value></data>
+  <data name="Waiting" xml:space="preserve"><value>En attente</value></data>
+  <data name="WetMix01" xml:space="preserve"><value>Mix traité · 0–1</value></data>
+  <data name="WhatCodecToneDoes" xml:space="preserve"><value>Ce que fait CodecTone</value></data>
+  <data name="Width02" xml:space="preserve"><value>Largeur · 0–2</value></data>
+  <data name="Windows" xml:space="preserve"><value>Windows</value></data>
+  <data name="WithTagChanges" xml:space="preserve"><value>{0} · {1} avec des tags modifiés{2}</value></data>
+  <data name="Write" xml:space="preserve"><value>Écrire</value></data>
+  <data name="YourMediaStaysOnThisComputer" xml:space="preserve"><value>Vos médias restent sur cet ordinateur. CodecTone n'a ni stockage cloud, ni statistiques, ni télémétrie. Le réseau ne sert que si vous demandez l'installation de FFmpeg ou ouvrez GitHub.</value></data>
+  <data name="YourPresetIsLoadedIntensityDoes" xml:space="preserve"><value>Votre preset « {0} » est chargé. L'intensité ne le modifie pas.</value></data>
+</root>

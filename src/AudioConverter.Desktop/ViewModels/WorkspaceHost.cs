@@ -9,6 +9,7 @@ using AudioConverter.Infrastructure.Artwork;
 using AudioConverter.Infrastructure.Ffmpeg;
 using AudioConverter.Infrastructure.Remix;
 using AudioConverter.Infrastructure.Storage;
+using L = AudioConverter.Desktop.Localization.Localizer;
 
 namespace AudioConverter.Desktop.ViewModels;
 
@@ -34,7 +35,7 @@ public sealed class WorkspaceHost : ObservableObject, IDisposable
     private bool lastOperationFailed;
     private bool settingsLoaded;
     private double progress;
-    private string status = "Ready";
+    private string status = L.T("Ready");
     private string timingText = "";
     private bool disposed;
 
@@ -54,7 +55,7 @@ public sealed class WorkspaceHost : ObservableObject, IDisposable
     public RelayCommand PausePreviewCommand { get; }
     /// <summary>Seeks the playing preview to a source time in seconds (from a click on the waveform ruler).</summary>
     public RelayCommand<double> SeekPreviewCommand { get; }
-    public string PauseLabel => PreviewPlayer.IsPaused ? "Resume" : "Pause";
+    public string PauseLabel => PreviewPlayer.IsPaused ? L.T("Resume") : L.T("Pause");
     /// <summary>Preview loudness from 0 to 100; applies to the playing preview immediately and never to exports.</summary>
     public double PreviewVolume
     {
@@ -84,6 +85,14 @@ public sealed class WorkspaceHost : ObservableObject, IDisposable
     public bool FfmpegMissing { get => ffmpegMissing; private set => Set(ref ffmpegMissing, value); }
     public double Progress { get => progress; private set { if (Set(ref progress, value)) Raise(nameof(TaskbarProgress)); } }
     public string Status { get => status; set => Set(ref status, value); }
+
+    /// <summary>Re-reads computed text after a language change; an idle status line switches language too.</summary>
+    public void RefreshText()
+    {
+        if (L.IsText(status, "Ready")) status = L.T("Ready");
+        else if (L.IsText(status, "FFmpegReadyAllProcessingStaysLocal")) status = L.T("FFmpegReadyAllProcessingStaysLocal");
+        Raise(string.Empty);
+    }
     public string TimingText { get => timingText; set => Set(ref timingText, value); }
     public string? LastOutputFolder { get; private set; }
     public WorkspaceBase? LastOutputWorkspace { get; private set; }
@@ -110,7 +119,7 @@ public sealed class WorkspaceHost : ObservableObject, IDisposable
         try
         {
             UseTools(FfmpegLocator.Find());
-            Status = "FFmpeg ready. All processing stays local.";
+            Status = L.T("FFmpegReadyAllProcessingStaysLocal");
         }
         catch (FfmpegDependencyException error)
         {
@@ -121,7 +130,7 @@ public sealed class WorkspaceHost : ObservableObject, IDisposable
     public void EnsureFfmpeg()
     {
         if (Tools is null || Audio is null || Probe is null || Remix is null || ArtworkExtractor is null)
-            throw new FfmpegDependencyException("FFmpeg is required. Install it from this application first.");
+            throw new FfmpegDependencyException(L.T("FFmpegIsRequiredInstallItFrom"));
     }
 
     private void UseTools(FfmpegTools tools)
@@ -151,7 +160,7 @@ public sealed class WorkspaceHost : ObservableObject, IDisposable
         IsBusy = true;
         activeOperationCancellation = new CancellationTokenSource();
         Progress = 0;
-        TimingText = "Estimating time remaining…";
+        TimingText = L.T("EstimatingTimeRemaining");
         operationTimer.Restart();
         var succeeded = false;
         try
@@ -162,14 +171,14 @@ public sealed class WorkspaceHost : ObservableObject, IDisposable
         catch (OperationCanceledException)
         {
             operationTimer.Stop();
-            TimingText = $"Cancelled after {OperationTiming.FormatCompact(operationTimer.Elapsed)}";
-            Status = "Operation cancelled.";
-            AppendOperationReport("CANCELLED. Completed files are listed above; remaining files were not processed.");
+            TimingText = L.F("CancelledAfter", OperationTiming.FormatCompact(operationTimer.Elapsed));
+            Status = L.T("OperationCancelled");
+            AppendOperationReport(L.T("CANCELLEDCompletedFilesAreListedAbove"));
         }
         catch (Exception error)
         {
             operationTimer.Stop();
-            TimingText = $"Stopped after {OperationTiming.FormatCompact(operationTimer.Elapsed)}";
+            TimingText = L.F("StoppedAfter", OperationTiming.FormatCompact(operationTimer.Elapsed));
             Status = error.Message;
             lastOperationFailed = true;
             AppendOperationReport("FAIL  " + error.Message);
@@ -178,7 +187,7 @@ public sealed class WorkspaceHost : ObservableObject, IDisposable
         finally
         {
             operationTimer.Stop();
-            if (succeeded && Progress >= 100) TimingText = $"Completed in {OperationTiming.FormatCompact(operationTimer.Elapsed)}";
+            if (succeeded && Progress >= 100) TimingText = L.F("CompletedIn", OperationTiming.FormatCompact(operationTimer.Elapsed));
             IsBusy = false;
             activeOperationCancellation.Dispose();
             activeOperationCancellation = null;
@@ -201,19 +210,19 @@ public sealed class WorkspaceHost : ObservableObject, IDisposable
         Status = statusText;
         if (fraction >= 1)
         {
-            TimingText = $"Completed in {OperationTiming.FormatCompact(operationTimer.Elapsed)}";
+            TimingText = L.F("CompletedIn", OperationTiming.FormatCompact(operationTimer.Elapsed));
             return;
         }
 
         var remaining = OperationTiming.EstimateRemaining(operationTimer.Elapsed, fraction);
         if (remaining is null || operationTimer.Elapsed < TimeSpan.FromSeconds(2))
         {
-            TimingText = "Estimating time remaining…";
+            TimingText = L.T("EstimatingTimeRemaining");
             return;
         }
 
         var finishTime = DateTime.Now.Add(remaining.Value);
-        TimingText = $"{OperationTiming.FormatCompact(remaining.Value)} remaining · finishes around {finishTime:HH:mm}";
+        TimingText = L.F("RemainingFinishesAround", OperationTiming.FormatCompact(remaining.Value), finishTime);
     }
 
     public void CancelActiveOperation() => activeOperationCancellation?.Cancel();
@@ -229,7 +238,7 @@ public sealed class WorkspaceHost : ObservableObject, IDisposable
     {
         try
         {
-            if (directory is null || !Directory.Exists(directory)) { Dialogs.Error("The output folder does not exist yet."); return; }
+            if (directory is null || !Directory.Exists(directory)) { Dialogs.Error(L.T("TheOutputFolderDoesNotExist")); return; }
             Process.Start(new ProcessStartInfo(directory) { UseShellExecute = true });
         }
         catch (Exception error) { Dialogs.Error(error.Message); }

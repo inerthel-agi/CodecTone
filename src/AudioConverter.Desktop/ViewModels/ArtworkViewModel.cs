@@ -5,6 +5,7 @@ using AudioConverter.Core.Artwork;
 using AudioConverter.Core.Compression;
 using AudioConverter.Desktop.Mvvm;
 using AudioConverter.Infrastructure.Storage;
+using L = AudioConverter.Desktop.Localization.Localizer;
 
 namespace AudioConverter.Desktop.ViewModels;
 
@@ -16,10 +17,10 @@ public sealed class ArtworkViewModel : WorkspaceBase
     private ArtworkOutputFormat artworkOutputFormat = ArtworkOutputFormat.Original;
     private bool artworkLimitDimensions;
     private string artworkMaximumDimension = "1200";
-    private string artworkEstimate = "Choose a source, then analyze it to find embedded album artwork.";
+    private string artworkEstimate = L.T("ChooseASourceToFindArtwork");
     private ArtworkPlannedAlbum? selectedArtworkAlbum;
     private System.Windows.Media.Imaging.BitmapImage? artworkPreview;
-    private string artworkPreviewInfo = "Select an album and preview its cover.";
+    private string artworkPreviewInfo = L.T("SelectAnAlbumAndPreviewIts");
 
     public ArtworkViewModel(WorkspaceHost host) : base(host, "Artwork", "ReportEmptyArtwork")
     {
@@ -37,7 +38,7 @@ public sealed class ArtworkViewModel : WorkspaceBase
     }
 
     public override ICommand PrimaryCommand => ExtractArtworkCommand;
-    public override string PrimaryLabel => "Extract artwork";
+    public override string PrimaryLabel => L.T("ExtractArtwork");
     public AsyncRelayCommand ChooseArtworkFileCommand { get; }
     public AsyncRelayCommand ChooseArtworkFolderCommand { get; }
     public RelayCommand ChooseArtworkOutputCommand { get; }
@@ -57,7 +58,7 @@ public sealed class ArtworkViewModel : WorkspaceBase
     public ArtworkPlannedAlbum? SelectedArtworkAlbum
     {
         get => selectedArtworkAlbum;
-        set { if (Set(ref selectedArtworkAlbum, value)) { ArtworkPreview = null; ArtworkPreviewInfo = "Select Preview cover to load the image."; PreviewArtworkCommand.RaiseCanExecuteChanged(); } }
+        set { if (Set(ref selectedArtworkAlbum, value)) { ArtworkPreview = null; ArtworkPreviewInfo = L.T("SelectPreviewCoverToLoadThe"); PreviewArtworkCommand.RaiseCanExecuteChanged(); } }
     }
     public System.Windows.Media.Imaging.BitmapImage? ArtworkPreview { get => artworkPreview; private set => Set(ref artworkPreview, value); }
     public string ArtworkPreviewInfo { get => artworkPreviewInfo; private set => Set(ref artworkPreviewInfo, value); }
@@ -87,6 +88,13 @@ public sealed class ArtworkViewModel : WorkspaceBase
         return Task.CompletedTask;
     }
 
+    protected override void OnLanguageChanged()
+    {
+        artworkEstimate = Refreshed(artworkEstimate, "ChooseASourceToFindArtwork");
+        artworkPreviewInfo = Refreshed(artworkPreviewInfo, "SelectAnAlbumAndPreviewIts", "SelectPreviewCoverToLoadThe");
+        base.OnLanguageChanged();
+    }
+
     protected override void RaiseCommands()
     {
         ChooseArtworkFileCommand.RaiseCanExecuteChanged(); ChooseArtworkFolderCommand.RaiseCanExecuteChanged(); AnalyzeArtworkCommand.RaiseCanExecuteChanged(); ExtractArtworkCommand.RaiseCanExecuteChanged(); PreviewArtworkCommand.RaiseCanExecuteChanged();
@@ -104,9 +112,9 @@ public sealed class ArtworkViewModel : WorkspaceBase
         await RunBusyAsync(async () =>
         {
             var preparation = await PrepareArtworkAsync(1);
-            ArtworkEstimate = $"Scanned {preparation.SourceCount} audio file(s) · {preparation.Plan.Albums.Count} album cover(s) ready · {preparation.Plan.Skipped.Count + preparation.Failures.Count} skipped or invalid";
+            ArtworkEstimate = L.F("ScannedAudioFileSAlbumCover", preparation.SourceCount, preparation.Plan.Albums.Count, preparation.Plan.Skipped.Count + preparation.Failures.Count);
             Report = BuildArtworkPreflightReport(preparation);
-            UpdateOperationProgress(1, $"Artwork analysis ready: {preparation.Plan.Albums.Count} album(s)");
+            UpdateOperationProgress(1, L.F("ArtworkAnalysisReadyAlbumS", preparation.Plan.Albums.Count));
         });
     }
 
@@ -127,8 +135,8 @@ public sealed class ArtworkViewModel : WorkspaceBase
             image.EndInit();
             image.Freeze();
             ArtworkPreview = image;
-            ArtworkPreviewInfo = $"{result.Album.Artwork.Width} × {result.Album.Artwork.Height} · {result.Album.Artwork.CodecName}\n{result.Album.SourcePath}";
-            UpdateOperationProgress(1, "Artwork preview ready.");
+            ArtworkPreviewInfo = L.F("ArtworkPreviewDetails", result.Album.Artwork.Width, result.Album.Artwork.Height, result.Album.Artwork.CodecName, result.Album.SourcePath);
+            UpdateOperationProgress(1, L.T("ArtworkPreviewReady"));
         });
     }
 
@@ -136,12 +144,12 @@ public sealed class ArtworkViewModel : WorkspaceBase
     {
         await RunBusyAsync(async () =>
         {
-            Report = "Artwork extraction started.";
+            Report = L.T("ArtworkExtractionStarted");
             var preparation = await PrepareArtworkAsync(0.15);
             var options = CreateArtworkOptions();
             var outputRoot = preparation.OutputRoot;
             var lines = new List<string>(preparation.Failures);
-            lines.AddRange(preparation.ScanWarnings.Select(warning => "SKIP folder: " + warning));
+            lines.AddRange(preparation.ScanWarnings.Select(warning => L.T("SKIPFolder") + warning));
             lines.AddRange(preparation.Plan.Skipped.Select(item => $"SKIP  {item.SourcePath}: {item.Reason}"));
             var succeeded = 0;
             var failed = preparation.Failures.Count;
@@ -152,16 +160,16 @@ public sealed class ArtworkViewModel : WorkspaceBase
                 var baseIndex = index;
                 var progress = new Progress<double>(fraction => UpdateOperationProgress(
                     0.15 + (baseIndex + fraction) / Math.Max(1, preparation.Plan.Albums.Count) * 0.85,
-                    $"Extracting artwork {baseIndex + 1}/{preparation.Plan.Albums.Count}: {album.Artist} - {album.Album}"));
+                    L.F("ExtractingArtwork", baseIndex + 1, preparation.Plan.Albums.Count, album.Artist, album.Album)));
                 var result = await Host.ArtworkExtractor!.ExtractAsync(album, outputRoot, options, progress, ActiveOperationToken);
                 if (result.Error is not null) { failed++; lines.Add($"FAIL  {album.SourcePath}: {result.Error}"); }
-                else if (result.Skipped) { skipped++; lines.Add($"SKIP  {album.Artist} - {album.Album}: identical image already exists at {result.OutputPath}"); }
+                else if (result.Skipped) { skipped++; lines.Add(L.F("SKIPIdenticalImageAlreadyExistsAt", album.Artist, album.Album, result.OutputPath)); }
                 else { succeeded++; lines.Add($"OK    {album.Artist} - {album.Album} -> {result.OutputPath}"); }
                 Host.AppendOperationReport(lines[^1]);
             }
-            Report = $"Completed: {succeeded} extracted, {failed} failed, {skipped} skipped\nOutput: {outputRoot}\n\n" + string.Join('\n', lines);
+            Report = L.F("CompletedExtractedFailedSkippedOutput", succeeded, failed, skipped, outputRoot) + string.Join('\n', lines);
             if (succeeded + skipped > 0) Host.SetLastOutputFolder(this, outputRoot);
-            UpdateOperationProgress(1, $"Artwork extraction completed: {succeeded} extracted, {failed} failed, {skipped} skipped");
+            UpdateOperationProgress(1, L.F("ArtworkExtractionCompletedExtractedFaile", succeeded, failed, skipped));
         });
     }
 
@@ -173,8 +181,8 @@ public sealed class ArtworkViewModel : WorkspaceBase
         var discovered = await Task.Run(() => CompressionFileDiscovery.Find(ArtworkSourcePath, recursive: true,
                 onSkipped: scanWarnings.Add, cancellationToken: ActiveOperationToken)
             .Where(file => !IsPathInside(file.Path, outputRoot)).ToArray(), ActiveOperationToken);
-        foreach (var warning in scanWarnings) Host.AppendOperationReport("SKIP folder: " + warning);
-        if (discovered.Length == 0) throw new InvalidDataException("No supported audio file was found.");
+        foreach (var warning in scanWarnings) Host.AppendOperationReport(L.T("SKIPFolder") + warning);
+        if (discovered.Length == 0) throw new InvalidDataException(L.T("NoSupportedAudioFileWasFound"));
 
         var sources = new List<ArtworkSource>();
         var failures = new List<string>();
@@ -188,7 +196,7 @@ public sealed class ArtworkViewModel : WorkspaceBase
             }
             catch (OperationCanceledException) { throw; }
             catch (Exception error) { failures.Add($"FAIL  {file.RelativePath}: {error.Message}"); }
-            UpdateOperationProgress((index + 1d) / discovered.Length * progressWeight, $"Analyzing artwork {index + 1}/{discovered.Length}: {Path.GetFileName(file.Path)}");
+            UpdateOperationProgress((index + 1d) / discovered.Length * progressWeight, L.F("AnalyzingArtwork", index + 1, discovered.Length, Path.GetFileName(file.Path)));
         }
         var plan = ArtworkPlanner.Create(sources);
         ArtworkAlbums.Clear();
@@ -203,7 +211,7 @@ public sealed class ArtworkViewModel : WorkspaceBase
         if (IsArtworkConversion && ArtworkLimitDimensions)
         {
             if (!int.TryParse(ArtworkMaximumDimension, out var parsed) || parsed is < 64 or > 8192)
-                throw new ArgumentException("Maximum artwork dimension must be between 64 and 8192 pixels.");
+                throw new ArgumentException(L.T("MaximumArtworkDimensionMustBeBetween"));
             maximum = parsed;
         }
         return new ArtworkExtractionOptions(ArtworkOutputFormat, maximum);
@@ -220,10 +228,10 @@ public sealed class ArtworkViewModel : WorkspaceBase
     private static string BuildArtworkPreflightReport(ArtworkPreparation preparation)
     {
         var lines = new List<string>(preparation.Failures);
-        lines.AddRange(preparation.ScanWarnings.Select(warning => "SKIP folder: " + warning));
-        lines.AddRange(preparation.Plan.Albums.Select(album => $"READY {album.Artist} - {album.Album} · stream {album.Artwork.StreamIndex} · {album.Artwork.CodecName} · {album.Artwork.Width}x{album.Artwork.Height}"));
+        lines.AddRange(preparation.ScanWarnings.Select(warning => L.T("SKIPFolder") + warning));
+        lines.AddRange(preparation.Plan.Albums.Select(album => L.F("READYStreamX", album.Artist, album.Album, album.Artwork.StreamIndex, album.Artwork.CodecName, album.Artwork.Width, album.Artwork.Height)));
         lines.AddRange(preparation.Plan.Skipped.Select(item => $"SKIP  {item.SourcePath}: {item.Reason}"));
-        return lines.Count == 0 ? "No embedded artwork was found." : string.Join('\n', lines);
+        return lines.Count == 0 ? L.T("NoEmbeddedArtworkWasFound") : string.Join('\n', lines);
     }
 
     private sealed record ArtworkPreparation(ArtworkPlan Plan, IReadOnlyList<string> Failures, string OutputRoot, int SourceCount, IReadOnlyList<string> ScanWarnings);

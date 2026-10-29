@@ -1,7 +1,13 @@
+using System.IO;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Threading;
+using System.Xml.Linq;
+using AudioConverter.Core.Artwork;
+using AudioConverter.Core.Inspection;
 using AudioConverter.Core.Remix;
 using AudioConverter.Desktop;
+using AudioConverter.Desktop.Localization;
 using AudioConverter.Desktop.Services;
 using AudioConverter.Desktop.ViewModels;
 
@@ -10,6 +16,68 @@ namespace AudioConverter.Desktop.Tests;
 [TestClass]
 public sealed class WorkspaceTests
 {
+    /// <summary>Assertions and captures below read English text, whatever the Windows display language is.</summary>
+    [AssemblyInitialize]
+    public static void UseEnglish(TestContext _) => Localizer.Instance.SetLanguage("en");
+
+    [TestMethod]
+    public async Task EveryUsedKey_ExistsInEnglishAndFrench()
+    {
+        var desktop = Path.Combine(RepositoryRoot(), "src", "AudioConverter.Desktop");
+        var english = LoadStrings(Path.Combine(desktop, "Localization", "Strings.resx"));
+        var french = LoadStrings(Path.Combine(desktop, "Localization", "Strings.fr.resx"));
+        var used = new HashSet<string>();
+        foreach (var file in Directory.EnumerateFiles(desktop, "*.xaml", SearchOption.AllDirectories))
+            used.UnionWith(Regex.Matches(File.ReadAllText(file), @"\{l:T (\w+)\}|LocalizedFormat}"" ConverterParameter=""(\w+)""").Select(match => match.Groups[1].Value + match.Groups[2].Value));
+        foreach (var file in Directory.EnumerateFiles(desktop, "*.cs", SearchOption.AllDirectories).Where(file => !file.Contains(@"\obj\")))
+        {
+            var code = File.ReadAllText(file);
+            used.UnionWith(Regex.Matches(code, @"\bL(?:ocalizer)?\.(?:T|F)\(""(\w+)""[,)]").Select(match => match.Groups[1].Value));
+            used.UnionWith(Regex.Matches(code, @"base\(host, ""\w+"", ""(\w+)""\)").Select(match => match.Groups[1].Value));
+            foreach (Match call in Regex.Matches(code, @"(?:Refreshed|IsText)\([^)]*\)"))
+                used.UnionWith(Regex.Matches(call.Value, @"""(\w+)""").Select(match => match.Groups[1].Value));
+        }
+        used.UnionWith(Enum.GetNames<SourceVerdictKind>().Select(kind => "Verdict" + kind));
+        used.UnionWith(ThemeService.Themes.Where(theme => theme != "Oled").Select(theme => "Theme" + theme));
+        await OnSta(async () =>
+        {
+            using var vm = new MainViewModel(new TestDialogs());
+            vm.Compress.CompressionFormat = Core.Models.AudioFormat.Mp3;
+            IEnumerable<object> items = [.. vm.Tools.Append(vm.AboutItem).Select(item => item.Name), .. vm.Compress.CompressionProfiles, .. vm.Normalize.Modes,
+                .. vm.Remix.RemixCoverActions, .. vm.Split.SplitModes, .. vm.Remix.RemixEffectKinds.Cast<object>(), .. vm.Remix.RemixIntensities.Cast<object>(),
+                .. Enum.GetValues<ArtworkOutputFormat>().Cast<object>(), "Export", "Metadata"];
+            used.UnionWith(items.Select(item => LocalizeItemConverter.Key(item.ToString()!)));
+            await vm.ShutdownAsync();
+        });
+
+        Assert.AreEqual("", string.Join(", ", used.Where(key => !english.ContainsKey(key) || !french.ContainsKey(key)).Order()));
+        Assert.AreEqual("", string.Join(", ", english.Keys.Where(key => !french.ContainsKey(key)).Order()), "untranslated keys");
+    }
+
+    [TestMethod]
+    public void FrenchStrings_KeepPlaceholdersAndReportPrefixes()
+    {
+        var folder = Path.Combine(RepositoryRoot(), "src", "AudioConverter.Desktop", "Localization");
+        var english = LoadStrings(Path.Combine(folder, "Strings.resx"));
+        var french = LoadStrings(Path.Combine(folder, "Strings.fr.resx"));
+        static string Shape(string text) =>
+            string.Join(" ", Regex.Matches(text, @"\{(\d+)(?::[^}]*)?\}").Select(match => match.Groups[1].Value).Order())
+            + "|" + Regex.Match(text, @"^(OK|FAIL|SKIP|CANCELLED|READY)\b").Value + "|" + text.Count(c => c == '\n');
+        Assert.AreEqual("", string.Join(", ", english.Where(pair => french.TryGetValue(pair.Key, out var text) && Shape(text) != Shape(pair.Value)).Select(pair => pair.Key)));
+        // Preset descriptions are French-only: English shows the catalog text from Core.
+        Assert.AreEqual("", string.Join(", ", french.Keys.Where(key => !english.ContainsKey(key) && !key.StartsWith("PresetDescription", StringComparison.Ordinal))));
+        Assert.AreEqual("", string.Join(", ", Enum.GetNames<RemixPreset>().Where(preset => !french.ContainsKey("PresetDescription" + preset))));
+    }
+
+    private static Dictionary<string, string> LoadStrings(string path) =>
+        XDocument.Load(path).Root!.Elements("data").ToDictionary(data => (string)data.Attribute("name")!, data => (string?)data.Element("value") ?? "");
+
+    private static string RepositoryRoot()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "AudioConverter.sln"))) directory = directory.Parent;
+        return directory?.FullName ?? throw new InvalidOperationException("Repository root not found.");
+    }
     [TestMethod]
     public async Task EditedRack_RefusalPreservesIntensityAndValues()
     {
@@ -176,6 +244,7 @@ public sealed class WorkspaceTests
             lines.Select(line => line.Kind.ToString()).ToArray());
         Assert.AreEqual("a.flac → a.mp3", lines[1].Text);
         Assert.AreEqual("b.flac: bad header", lines[2].Text);
+        Assert.AreEqual("Remaining files were not processed.", lines[4].Text);
         Assert.AreEqual("OK  C:\\in\\a.flac -> D:\\out\\a.mp3", lines[1].Raw);
     }
 
@@ -194,18 +263,21 @@ public sealed class WorkspaceTests
         {
             var application = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
             string[] pages;
-            using (var probe = new MainViewModel(new TestDialogs())) pages = probe.Tools.Append(probe.AboutItem).Select(item => item.Label).ToArray();
-            foreach (var theme in ThemeService.Themes)
+            using (var probe = new MainViewModel(new TestDialogs())) pages = probe.Tools.Append(probe.AboutItem).Select(item => item.Name).ToArray();
+            // French labels run longer, so they get their own pass at the narrowest size and in Glass.
+            var passes = ThemeService.Themes.SelectMany(theme => new[] { (900, 650), (1180, 820), (1180, 2300) }.Select(size => (Language: "en", Theme: theme, Size: size)))
+                .Append(("fr", "Oled", (900, 650))).Append(("fr", "Glass", (1180, 2300)));
+            foreach (var (language, theme, (width, height)) in passes)
             foreach (var workspace in pages)
-            foreach (var (width, height) in new[] { (900, 650), (1180, 820), (1180, 2300) })
             {
+                Localizer.Instance.SetLanguage(language);
                 application.Resources.MergedDictionaries.Clear();
                 application.Resources.MergedDictionaries.Add(ThemeService.LoadPalette(theme, backdrop: false));
                 application.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = new Uri("pack://application:,,,/CodecTone;component/Themes/Controls.xaml") });
                 // Same path as Windows "Animation effects" off: transitions finish instantly, so captures show final states.
                 ThemeService.DisableMotion(application.Resources);
                 using var vm = new MainViewModel(new TestDialogs());
-                vm.Tools.Append(vm.AboutItem).Single(item => item.Label == workspace).ShowCommand.Execute(null);
+                vm.Tools.Append(vm.AboutItem).Single(item => item.Name == workspace).ShowCommand.Execute(null);
                 if (workspace == "Convert")
                 {
                     vm.Convert.AddSources([sampleFolder]);
@@ -239,11 +311,12 @@ public sealed class WorkspaceTests
                 bitmap.Render(root);
                 var encoder = new System.Windows.Media.Imaging.PngBitmapEncoder();
                 encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(bitmap));
-                using (var stream = System.IO.File.Create(System.IO.Path.Combine(AppContext.BaseDirectory, $"layout-{theme}-{workspace.Replace(' ', '-')}-{width}x{height}.png"))) encoder.Save(stream);
+                using (var stream = System.IO.File.Create(System.IO.Path.Combine(AppContext.BaseDirectory, $"layout-{theme}-{workspace.Replace(' ', '-')}-{width}x{height}{(language == "en" ? "" : "-" + language)}.png"))) encoder.Save(stream);
                 await vm.ShutdownAsync();
                 window.Close();
                 await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
             }
+            Localizer.Instance.SetLanguage("en");
             application.Shutdown();
         });
         System.Diagnostics.PresentationTraceSources.DataBindingSource.Listeners.Remove(bindingErrors);

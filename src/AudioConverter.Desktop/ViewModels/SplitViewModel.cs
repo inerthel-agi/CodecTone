@@ -7,6 +7,7 @@ using AudioConverter.Core.Split;
 using AudioConverter.Core.Validation;
 using AudioConverter.Desktop.Mvvm;
 using AudioConverter.Infrastructure.Split;
+using L = AudioConverter.Desktop.Localization.Localizer;
 
 namespace AudioConverter.Desktop.ViewModels;
 
@@ -25,7 +26,7 @@ public sealed class SplitViewModel : WorkspaceBase
     private string sourcePath = "";
     private string sourceDetails = "";
     private double durationSeconds;
-    private string cueStatus = "Load a source file first.";
+    private string cueStatus = L.T("LoadASourceFileFirst");
     private string selectedMode = CueSheetMode;
     private double noiseDb = -45;
     private double minimumSilenceSeconds = 1.5;
@@ -47,7 +48,7 @@ public sealed class SplitViewModel : WorkspaceBase
     }
 
     public override ICommand PrimaryCommand => SplitCommand;
-    public override string PrimaryLabel => "Split tracks";
+    public override string PrimaryLabel => L.T("SplitTracks");
     public AsyncRelayCommand ChooseSourceCommand { get; }
     public RelayCommand ChooseCueCommand { get; }
     public RelayCommand ChooseOutputCommand { get; }
@@ -90,8 +91,8 @@ public sealed class SplitViewModel : WorkspaceBase
     public string AlbumArtist { get => albumArtist; set => Set(ref albumArtist, value); }
     public ObservableCollection<SplitTrackItem> Tracks => IsCueMode ? cueTracks : silenceTracks;
     public string TrackSummary => Tracks.Count == 0
-        ? (IsCueMode ? "No tracks yet. Load a cue sheet." : "No tracks yet. Detect silences to plan them.")
-        : $"{Tracks.Count} tracks · {TimestampParser.Format(Tracks.Sum(track => track.DurationSeconds))} in total";
+        ? (IsCueMode ? L.T("NoTracksYetLoadACue") : L.T("NoTracksYetDetectSilencesTo"))
+        : L.F("TracksInTotal", Tracks.Count, TimestampParser.Format(Tracks.Sum(track => track.DurationSeconds)));
     public string OutputFolder { get => outputFolder; set => Set(ref outputFolder, value); }
     public AudioFormat SelectedFormat { get => selectedFormat; set => Set(ref selectedFormat, value); }
     public string FilePattern { get => filePattern; set => Set(ref filePattern, value); }
@@ -100,6 +101,12 @@ public sealed class SplitViewModel : WorkspaceBase
     public override async Task AcceptDropAsync(IReadOnlyList<string> paths)
     {
         if (paths.FirstOrDefault(File.Exists) is { } path) await LoadSourceAsync(path);
+    }
+
+    protected override void OnLanguageChanged()
+    {
+        cueStatus = Refreshed(cueStatus, "LoadASourceFileFirst", "NoCueSheetBesideThisFile");
+        base.OnLanguageChanged();
     }
 
     protected override void RaiseCommands()
@@ -118,7 +125,7 @@ public sealed class SplitViewModel : WorkspaceBase
 
     private void ChooseCue()
     {
-        if (Dialogs.ChooseFile("Cue sheets|*.cue") is { } path) TryLoadCue(path);
+        if (Dialogs.ChooseFile(L.T("CueSheetsCue")) is { } path) TryLoadCue(path);
         RefreshTracks();
     }
 
@@ -126,7 +133,7 @@ public sealed class SplitViewModel : WorkspaceBase
     {
         Host.EnsureFfmpeg();
         _ = AudioFormats.FromPath(path);
-        Host.Status = "Reading audio…";
+        Host.Status = L.T("ReadingAudio");
         var info = await Host.Probe!.ProbeAsync(path, ActiveOperationToken);
         sourceInfo = info;
         SourcePath = path;
@@ -148,11 +155,11 @@ public sealed class SplitViewModel : WorkspaceBase
         }
         else
         {
-            CueStatus = "No cue sheet beside this file. Choose one, or split by silence.";
+            CueStatus = L.T("NoCueSheetBesideThisFile");
             SelectedMode = SilenceMode;
         }
         RefreshTracks();
-        UpdateOperationProgress(1, $"Ready to split {Path.GetFileName(path)}");
+        UpdateOperationProgress(1, L.F("ReadyToSplit", Path.GetFileName(path)));
     });
 
     /// <summary>Reads a cue sheet into the cue track list. Problems stay in <see cref="CueStatus"/> rather than failing the page.</summary>
@@ -166,7 +173,7 @@ public sealed class SplitViewModel : WorkspaceBase
             foreach (var item in ToItems(tracks)) cueTracks.Add(item);
             if (sheet.Title.Length > 0) Album = sheet.Title;
             if (sheet.Performer.Length > 0) AlbumArtist = sheet.Performer;
-            CueStatus = $"{Path.GetFileName(path)} · {tracks.Count} tracks";
+            CueStatus = L.F("Tracks2", Path.GetFileName(path), tracks.Count);
         }
         catch (Exception error) when (error is IOException or FormatException or NotSupportedException or InvalidDataException or ArgumentException or UnauthorizedAccessException)
         {
@@ -177,32 +184,32 @@ public sealed class SplitViewModel : WorkspaceBase
     private Task DetectSilenceAsync() => RunBusyAsync(async () =>
     {
         Host.EnsureFfmpeg();
-        Host.Status = "Looking for silences…";
-        var progress = new Progress<double>(fraction => UpdateOperationProgress(fraction, "Looking for silences…"));
+        Host.Status = L.T("LookingForSilences");
+        var progress = new Progress<double>(fraction => UpdateOperationProgress(fraction, L.T("LookingForSilences")));
         var found = await new AlbumSplitService(Host.Tools!).DetectSilenceAsync(
             SourcePath, NoiseDb, MinimumSilenceSeconds, DurationSeconds, progress, ActiveOperationToken);
         silences = found;
         PlanSilenceTracks();
         RefreshTracks();
         if (silenceTracks.Count == 0)
-            throw new InvalidDataException("No audio was found outside the silences. Lower the threshold and try again.");
-        Report = $"Silence analysis: {found.Count} silences found, {silenceTracks.Count} tracks planned.";
-        UpdateOperationProgress(1, $"{silenceTracks.Count} tracks planned from the silences.");
+            throw new InvalidDataException(L.T("NoAudioWasFoundOutsideThe"));
+        Report = L.F("SilenceAnalysisSilencesFoundTracksPlanne", found.Count, silenceTracks.Count);
+        UpdateOperationProgress(1, L.F("TracksPlannedFromTheSilences", silenceTracks.Count));
     });
 
     private Task SplitAsync() => RunBusyAsync(async () =>
     {
         Host.EnsureFfmpeg();
         var directory = OutputFolder.Trim();
-        if (directory.Length == 0) throw new InvalidOperationException("Choose an output folder.");
+        if (directory.Length == 0) throw new InvalidOperationException(L.T("ChooseAnOutputFolder"));
         var source = SourcePath;
         var format = SelectedFormat;
         var plan = Tracks.Select(item => item.ToAlbumTrack()).ToArray();
-        if (plan.Length == 0) throw new InvalidOperationException("There are no tracks to split.");
+        if (plan.Length == 0) throw new InvalidOperationException(L.T("ThereAreNoTracksToSplit"));
 
         var names = plan.Select(track => TrackFileNamer.Build(FilePattern, track, format)).ToArray();
         if (names.Distinct(StringComparer.OrdinalIgnoreCase).Count() != names.Length)
-            throw new InvalidOperationException("Two tracks would get the same file name. Change the file name pattern.");
+            throw new InvalidOperationException(L.T("TwoTracksWouldGetTheSame"));
 
         var options = CreateOptions(format);
         var splitter = new AlbumSplitService(Host.Tools!);
@@ -210,7 +217,7 @@ public sealed class SplitViewModel : WorkspaceBase
         var albumName = Album.Trim();
         var lines = new List<string>();
         var written = 0;
-        Report = "Split started.";
+        Report = L.T("SplitStarted");
         for (var index = 0; index < plan.Length; index++)
         {
             var track = plan[index];
@@ -224,7 +231,7 @@ public sealed class SplitViewModel : WorkspaceBase
                 track.Number,
                 plan.Length);
             var itemProgress = new Progress<double>(fraction =>
-                UpdateOperationProgress((position + fraction) / plan.Length, $"Splitting {track.Number}/{plan.Length}: {track.Title}"));
+                UpdateOperationProgress((position + fraction) / plan.Length, L.F("Splitting", track.Number, plan.Length, track.Title)));
             string line;
             try
             {
@@ -241,9 +248,9 @@ public sealed class SplitViewModel : WorkspaceBase
             Host.AppendOperationReport(line);
         }
 
-        Report = $"Split completed: {written} written, {plan.Length - written} failed.\n" + string.Join('\n', lines);
+        Report = L.F("SplitCompletedWrittenFailed", written, plan.Length - written) + string.Join('\n', lines);
         if (written > 0) Host.SetLastOutputFolder(this, directory);
-        UpdateOperationProgress(1, $"Split completed: {written} of {plan.Length} tracks.");
+        UpdateOperationProgress(1, L.F("SplitCompletedOfTracks", written, plan.Length));
     });
 
     private void PlanSilenceTracks()

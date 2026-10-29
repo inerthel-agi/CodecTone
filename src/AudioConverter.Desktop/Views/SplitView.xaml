@@ -87,7 +87,7 @@
                 <StackPanel Margin="0,16,0,0">
                     <TextBlock Text="{l:T FileNamePattern}" Margin="0,0,0,7" />
                     <TextBox Text="{Binding FilePattern, UpdateSourceTrigger=PropertyChanged}" />
-                    <TextBlock Style="{StaticResource Caption}" Text="{}{track:00} is the track number and {title} the title. Characters Windows forbids in file names are removed." Margin="2,7,0,0" />
+                    <TextBlock Style="{StaticResource Caption}" Text="{l:T SplitPatternHint}" Margin="2,7,0,0" />
                 </StackPanel>
                 <CheckBox Content="{l:T OverwriteExistingFiles}" IsChecked="{Binding Overwrite}" Margin="0,14,0,0" />
                 <Separator Style="{StaticResource Rule}" />

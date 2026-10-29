@@ -7,6 +7,7 @@ using AudioConverter.Core.Remix;
 using AudioConverter.Core.Validation;
 using AudioConverter.Desktop.Mvvm;
 using AudioConverter.Infrastructure.Storage;
+using L = AudioConverter.Desktop.Localization.Localizer;
 
 namespace AudioConverter.Desktop.ViewModels;
 
@@ -49,8 +50,8 @@ public sealed class RemixViewModel : WorkspaceBase
     private RemixPresetCategory selectedRemixCategory = RemixPresetCategory.SpeedPitch;
     private RemixIntensity selectedRemixIntensity = RemixIntensity.Medium;
     private RemixPreset? selectedRemixPreset;
-    private string remixAnalysisStatus = "Choose a song to enable adaptive presets.";
-    private string remixAdaptiveExplanation = "Presets use safe static defaults until a song is analyzed.";
+    private string remixAnalysisStatus = L.T("ChooseASongToEnableAdaptive");
+    private string remixAdaptiveExplanation = L.T("PresetsUseSafeStaticDefaultsUntil");
 
     public RemixViewModel(WorkspaceHost host) : base(host, "Remix", "ReportEmptyRemix")
     {
@@ -69,7 +70,7 @@ public sealed class RemixViewModel : WorkspaceBase
         RemoveMetadataTagCommand = new RelayCommand<MetadataTagViewModel>(tag => RemixCustomTags.Remove(tag));
         PreviewRemixCommand = new AsyncRelayCommand(() => PreviewRemixAsync(), () => !Host.IsBusy && RemixDurationSeconds > 0);
         PreviewOriginalCommand = new AsyncRelayCommand(() => PreviewRemixAsync(true), () => !Host.IsBusy && RemixDurationSeconds > 0);
-        StopRemixCommand = new RelayCommand(() => { Host.CancelActiveOperation(); Host.StopPreview(); Host.Status = "Remix preview stopped."; });
+        StopRemixCommand = new RelayCommand(() => { Host.CancelActiveOperation(); Host.StopPreview(); Host.Status = L.T("RemixPreviewStopped"); });
         ExportRemixCommand = new AsyncRelayCommand(ExportRemixAsync, () => !Host.IsBusy && RemixDurationSeconds > 0);
         SaveUserPresetCommand = new RelayCommand(SaveUserPreset, () => RemixEffects.Count > 0 && !string.IsNullOrWhiteSpace(NewPresetName));
         ApplyUserPresetCommand = new RelayCommand<UserRemixPreset>(ApplyUserPreset);
@@ -92,30 +93,30 @@ public sealed class RemixViewModel : WorkspaceBase
         var (name, error) = UserRemixPreset.ValidateName(NewPresetName);
         if (name is null) { Dialogs.Error(error!); return; }
         var existing = UserPresets.FirstOrDefault(preset => preset.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
-        if (existing is not null && !Dialogs.Confirm($"Replace your preset \"{existing.Name}\"?")) return;
+        if (existing is not null && !Dialogs.Confirm(L.F("ReplaceYourPreset", existing.Name))) return;
         var preset = new UserRemixPreset(name, RemixEffects.Select(effect => new UserRemixEffect(effect.Kind, effect.Enabled, effect.First, effect.Second, effect.Third)).ToArray());
         if (!StoreUserPresets(UserPresets.Where(item => item != existing).Append(preset))) return;
         NewPresetName = "";
-        Host.Status = $"Preset saved: {name}";
+        Host.Status = L.F("PresetSaved", name);
     }
 
     private void ApplyUserPreset(UserRemixPreset preset)
     {
         if (remixRackDirty && RemixEffects.Count > 0
-            && !Dialogs.Confirm("Applying a preset will replace the current effect rack. Continue?")) return;
+            && !Dialogs.Confirm(L.T("ApplyingAPresetWillReplaceThe"))) return;
         RemixEffects.Clear();
         foreach (var effect in preset.Effects)
             RemixEffects.Add(new RemixEffectViewModel(effect.Kind, OnRemixRackChanged) { Enabled = effect.Enabled, First = effect.First, Second = effect.Second, Third = effect.Third });
         selectedRemixPreset = null;
         remixRackDirty = false;
-        RemixAdaptiveExplanation = $"Your preset \"{preset.Name}\" is loaded. Intensity does not change it.";
+        RemixAdaptiveExplanation = L.F("YourPresetIsLoadedIntensityDoes", preset.Name);
         Raise(nameof(IsExtremeAudioActive));
         Raise(nameof(RemixOutputDuration));
     }
 
     private void DeleteUserPreset(UserRemixPreset preset)
     {
-        if (!Dialogs.Confirm($"Delete your preset \"{preset.Name}\"?")) return;
+        if (!Dialogs.Confirm(L.F("DeleteYourPreset", preset.Name))) return;
         StoreUserPresets(UserPresets.Where(item => item != preset));
     }
 
@@ -125,7 +126,7 @@ public sealed class RemixViewModel : WorkspaceBase
         try { presetStore.Save(sorted); }
         catch (Exception error) when (error is IOException or UnauthorizedAccessException)
         {
-            Dialogs.Error($"Unable to save presets: {error.Message}");
+            Dialogs.Error(L.F("UnableToSavePresets", error.Message));
             return false;
         }
         UserPresets.Clear();
@@ -134,7 +135,7 @@ public sealed class RemixViewModel : WorkspaceBase
     }
 
     public override ICommand PrimaryCommand => ExportRemixCommand;
-    public override string PrimaryLabel => "Export remix";
+    public override string PrimaryLabel => L.T("ExportRemix");
     public AsyncRelayCommand ChooseRemixFileCommand { get; }
     public RelayCommand<string> SelectRemixCategoryCommand { get; }
     public RelayCommand<RemixPresetDefinition> ApplyRemixPresetCommand { get; }
@@ -177,7 +178,7 @@ public sealed class RemixViewModel : WorkspaceBase
         {
             if (selectedRemixIntensity == value) return;
             if (selectedRemixPreset is not null && remixRackDirty && RemixEffects.Count > 0
-                && !Dialogs.Confirm("Changing intensity replaces your edited rack. Continue?"))
+                && !Dialogs.Confirm(L.T("ChangingIntensityReplacesYourEditedRack")))
             {
                 Raise(nameof(SelectedRemixIntensity));
                 return;
@@ -188,7 +189,7 @@ public sealed class RemixViewModel : WorkspaceBase
     }
     public string RemixAnalysisStatus { get => remixAnalysisStatus; private set => Set(ref remixAnalysisStatus, value); }
     public string RemixAdaptiveExplanation { get => remixAdaptiveExplanation; private set => Set(ref remixAdaptiveExplanation, value); }
-    public string RemixAdaptiveLabel => remixAnalysis is null ? "STATIC" : "ADAPTIVE";
+    public string RemixAdaptiveLabel => remixAnalysis is null ? L.T("STATIC") : L.T("ADAPTIVE");
     public bool IsExtremeAudioActive => RemixEffects.Any(effect => effect.Enabled && effect.Kind is RemixEffectKind.Distortion or RemixEffectKind.BitCrusher);
     public string SpeedPitchCategoryState => CategoryState(RemixPresetCategory.SpeedPitch);
     public string BassPunchCategoryState => CategoryState(RemixPresetCategory.BassPunch);
@@ -267,6 +268,14 @@ public sealed class RemixViewModel : WorkspaceBase
         remixAnalysisCancellation?.Dispose();
     }
 
+    protected override void OnLanguageChanged()
+    {
+        remixAnalysisStatus = Refreshed(remixAnalysisStatus, "ChooseASongToEnableAdaptive");
+        remixAdaptiveExplanation = Refreshed(remixAdaptiveExplanation, "PresetsUseSafeStaticDefaultsUntil", "CustomRackSelectedAddAndOrder");
+        foreach (var effect in RemixEffects) effect.RefreshText();
+        base.OnLanguageChanged();
+    }
+
     protected override void RaiseCommands()
     {
         ChooseRemixFileCommand.RaiseCanExecuteChanged(); PreviewRemixCommand.RaiseCanExecuteChanged(); PreviewOriginalCommand.RaiseCanExecuteChanged(); ExportRemixCommand.RaiseCanExecuteChanged();
@@ -283,12 +292,12 @@ public sealed class RemixViewModel : WorkspaceBase
         remixAnalysis = null;
         Raise(nameof(RemixAdaptiveLabel));
         if (selectedRemixPreset is { } selectedPreset && !remixRackDirty) ApplyRemixPresetInternal(selectedPreset);
-        RemixAnalysisStatus = "Reading source before adaptive analysis…";
+        RemixAnalysisStatus = L.T("ReadingSourceBeforeAdaptiveAnalysis");
         await RunBusyAsync(async () =>
         {
             Host.EnsureFfmpeg();
             _ = AudioFormats.FromPath(path);
-            Host.Status = "Reading remix source and waveform…";
+            Host.Status = L.T("ReadingRemixSourceAndWaveform");
             var info = await Host.Probe!.ProbeAsync(path, ActiveOperationToken);
             var peaks = await Host.Audio!.ExtractWaveformAsync(path, 900, info.DurationSeconds, ActiveOperationToken);
             RemixSourcePath = path;
@@ -301,7 +310,7 @@ public sealed class RemixViewModel : WorkspaceBase
             RemixFormat = AudioFormats.FromPath(path);
             RemixOutputFolder = Path.GetDirectoryName(path) ?? "";
             LoadRemixMetadata(info.Tags);
-            UpdateOperationProgress(1, $"Remix source ready: {Path.GetFileName(path)}");
+            UpdateOperationProgress(1, L.F("RemixSourceReady", Path.GetFileName(path)));
         });
         if (!Host.IsClosing && RemixSourcePath == path && Host.Analyzer is not null) StartRemixAnalysis(path);
     }
@@ -309,9 +318,9 @@ public sealed class RemixViewModel : WorkspaceBase
     private void ApplyRemixPreset(RemixPresetDefinition definition)
     {
         if (remixRackDirty && RemixEffects.Count > 0
-            && !Dialogs.Confirm("Applying a preset will replace the current effect rack. Continue?")) return;
+            && !Dialogs.Confirm(L.T("ApplyingAPresetWillReplaceThe"))) return;
         if (definition.Preset == RemixPreset.Earrape
-            && !Dialogs.Confirm("HEARING WARNING: EARRAPE creates extreme distortion and loudness. Lower your headphone or speaker volume before Preview or Export. High-volume listening can permanently damage hearing. Apply this preset?")) return;
+            && !Dialogs.Confirm(L.T("HEARINGWARNINGEARRAPECreatesExtremeDisto"))) return;
         selectedRemixPreset = definition.Preset;
         ApplyRemixPresetInternal(definition.Preset);
     }
@@ -334,7 +343,7 @@ public sealed class RemixViewModel : WorkspaceBase
         RemixEffects.Clear();
         selectedRemixPreset = null;
         remixRackDirty = false;
-        RemixAdaptiveExplanation = "Custom rack selected. Add and order effects manually.";
+        RemixAdaptiveExplanation = L.T("CustomRackSelectedAddAndOrder");
         Raise(nameof(IsExtremeAudioActive));
         Raise(nameof(RemixOutputDuration));
     }
@@ -342,7 +351,7 @@ public sealed class RemixViewModel : WorkspaceBase
     private void StartRemixAnalysis(string path)
     {
         remixAnalysisCancellation = new CancellationTokenSource();
-        RemixAnalysisStatus = "Analyzing the full song locally…";
+        RemixAnalysisStatus = L.T("AnalyzingTheFullSongLocally");
         var task = AnalyzeRemixSourceAsync(path, remixAnalysisCancellation.Token);
         analysisTasks.Add(task);
         _ = ObserveAnalysisAsync(task);
@@ -362,7 +371,7 @@ public sealed class RemixViewModel : WorkspaceBase
             if (cancellationToken.IsCancellationRequested || RemixSourcePath != path) return;
             remixAnalysis = analysis;
             Raise(nameof(RemixAdaptiveLabel));
-            RemixAnalysisStatus = $"Analysis ready · {analysis.IntegratedLufs:0.0} LUFS · {analysis.LoudnessRange:0.0} LU range · width {analysis.StereoWidth:0.00}";
+            RemixAnalysisStatus = L.F("AnalysisReadyLUFSLURangeWidth", analysis.IntegratedLufs, analysis.LoudnessRange, analysis.StereoWidth);
             if (selectedRemixPreset is { } preset && !remixRackDirty) ApplyRemixPresetInternal(preset);
         }
         catch (OperationCanceledException) { }
@@ -371,17 +380,17 @@ public sealed class RemixViewModel : WorkspaceBase
             if (RemixSourcePath != path) return;
             remixAnalysis = null;
             Raise(nameof(RemixAdaptiveLabel));
-            RemixAnalysisStatus = $"Adaptive analysis unavailable · static presets remain usable ({error.Message})";
+            RemixAnalysisStatus = L.F("AdaptiveAnalysisUnavailableStaticPresets", error.Message);
         }
     }
 
     private void AddRemixEffect()
     {
-        if (RemixEffects.Count >= 16) { Dialogs.Error("A remix rack supports at most 16 effects."); return; }
+        if (RemixEffects.Count >= 16) { Dialogs.Error(L.T("ARemixRackSupportsAtMost")); return; }
         if (SelectedRemixEffectKind is RemixEffectKind.TempoPitch or RemixEffectKind.LoudnessNormalize or RemixEffectKind.FadeIn or RemixEffectKind.FadeOut
             && RemixEffects.Any(effect => effect.Kind == SelectedRemixEffectKind))
         {
-            Dialogs.Error($"{SelectedRemixEffectKind} can appear only once.");
+            Dialogs.Error(L.F("CanAppearOnlyOnce", SelectedRemixEffectKind));
             return;
         }
         var viewModel = new RemixEffectViewModel(SelectedRemixEffectKind, OnRemixRackChanged);
@@ -415,10 +424,10 @@ public sealed class RemixViewModel : WorkspaceBase
             var rack = original ? Array.Empty<RemixEffect>() : BuildRemixRack();
             RemixRackValidator.Validate(rack, RemixDurationSeconds);
             Host.StopPreview();
-            var progress = new Progress<double>(fraction => UpdateOperationProgress(fraction, "Rendering 20-second remix preview…"));
+            var progress = new Progress<double>(fraction => UpdateOperationProgress(fraction, L.T("Rendering20SecondRemixPreview")));
             var output = await Host.Remix!.RenderPreviewAsync(RemixSourcePath, rack, remixSampleRate, RemixDurationSeconds, RemixPreviewStartSeconds, progress, ActiveOperationToken);
             Host.PlayPreview(output, position => RemixPlayheadSeconds = position, RemixPreviewStartSeconds, RemixPreviewEndSeconds - RemixPreviewStartSeconds, TempoRate(rack));
-            UpdateOperationProgress(1, original ? "Playing original excerpt." : "Playing remix excerpt.");
+            UpdateOperationProgress(1, original ? L.T("PlayingOriginalExcerpt") : L.T("PlayingRemixExcerpt"));
         });
     }
 
@@ -433,9 +442,9 @@ public sealed class RemixViewModel : WorkspaceBase
             var hasRequestedCover = metadata.CoverAction == CoverArtAction.Replace || metadata.CoverAction == CoverArtAction.Keep && remixSourceHasCover;
             if (hasRequestedCover
                 && RemixFormat is not (AudioFormat.Mp3 or AudioFormat.M4a or AudioFormat.Flac)
-                && !Dialogs.Confirm("The selected output format does not support embedded cover art here. Export without the cover?"))
+                && !Dialogs.Confirm(L.T("TheSelectedOutputFormatDoesNot")))
             {
-                Host.Status = "Remix export cancelled.";
+                Host.Status = L.T("RemixExportCancelled");
                 Host.TimingText = "";
                 return;
             }
@@ -449,11 +458,11 @@ public sealed class RemixViewModel : WorkspaceBase
                 RemixFormat.IsLossy() ? null : ParseOptionalInt(RemixBitDepth),
                 PreserveMetadata: true,
                 Overwrite: RemixOverwrite);
-            var progress = new Progress<double>(fraction => UpdateOperationProgress(fraction, "Exporting remix…"));
+            var progress = new Progress<double>(fraction => UpdateOperationProgress(fraction, L.T("ExportingRemix")));
             await Host.Remix!.ExportAsync(RemixSourcePath, output, rack, encoding, metadata, remixSampleRate, RemixDurationSeconds, remixSourceHasCover, progress, ActiveOperationToken);
-            Report = $"Export completed\nSource: {RemixSourcePath}\nOutput: {output}\nEffects: {rack.Count(effect => effect.Enabled)}\nDuration: {TimestampParser.Format(RemixOutputDuration)}";
+            Report = L.F("ExportCompletedSourceOutputEffectsDurati", RemixSourcePath, output, rack.Count(effect => effect.Enabled), TimestampParser.Format(RemixOutputDuration));
             Host.SetLastOutputFolder(this, directory);
-            UpdateOperationProgress(1, $"Remix exported: {Path.GetFileName(output)}");
+            UpdateOperationProgress(1, L.F("RemixExported", Path.GetFileName(output)));
         });
     }
 

@@ -40,7 +40,13 @@ public sealed class WaveformControl : FrameworkElement
     /// <summary>Executed with the source time in seconds when the ruler is clicked during playback.</summary>
     public ICommand? SeekCommand { get => (ICommand?)GetValue(SeekCommandProperty); set => SetValue(SeekCommandProperty, value); }
 
-    public WaveformControl() { MinHeight = 160; Cursor = Cursors.SizeWE; Focusable = true; }
+    public WaveformControl()
+    {
+        MinHeight = 160; Cursor = Cursors.SizeWE; Focusable = true;
+        // The empty-state text is drawn, not bound, so redraw it when the language changes.
+        Loaded += (_, _) => Localization.Localizer.Instance.LanguageChanged += InvalidateVisual;
+        Unloaded += (_, _) => Localization.Localizer.Instance.LanguageChanged -= InvalidateVisual;
+    }
 
     protected override void OnRender(DrawingContext drawingContext)
     {
@@ -55,7 +61,7 @@ public sealed class WaveformControl : FrameworkElement
         drawingContext.DrawRoundedRectangle(surface, new Pen(border, 1), bounds, 6, 6);
         if (Peaks.Length == 0 || Duration <= 0)
         {
-            var empty = Text("Choose an audio file to generate its waveform", 13, muted);
+            var empty = Text(Localization.Localizer.T("ChooseAnAudioFileToGenerateWaveform"), 13, muted);
             drawingContext.DrawText(empty, new Point((ActualWidth - empty.Width) / 2, (ActualHeight - empty.Height) / 2));
             return;
         }

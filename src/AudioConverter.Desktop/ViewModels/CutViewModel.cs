@@ -4,6 +4,7 @@ using AudioConverter.Core.Models;
 using AudioConverter.Core.Paths;
 using AudioConverter.Desktop.Mvvm;
 using AudioConverter.Infrastructure.Storage;
+using L = AudioConverter.Desktop.Localization.Localizer;
 
 namespace AudioConverter.Desktop.ViewModels;
 
@@ -32,11 +33,11 @@ public sealed class CutViewModel : WorkspaceBase
         ChooseCutOutputCommand = new RelayCommand(() => CutOutputFolder = Dialogs.ChooseFolder(CutOutputFolder) ?? CutOutputFolder);
         CutCommand = new AsyncRelayCommand(CutAsync, () => !Host.IsBusy && DurationSeconds > 0);
         PreviewCommand = new AsyncRelayCommand(PreviewAsync, () => !Host.IsBusy && DurationSeconds > 0);
-        StopPreviewCommand = new RelayCommand(() => { Host.CancelActiveOperation(); Host.StopPreview(); Host.Status = "Preview stopped."; });
+        StopPreviewCommand = new RelayCommand(() => { Host.CancelActiveOperation(); Host.StopPreview(); Host.Status = L.T("PreviewStopped"); });
     }
 
     public override ICommand PrimaryCommand => CutCommand;
-    public override string PrimaryLabel => "Cut audio";
+    public override string PrimaryLabel => L.T("CutAudio");
     public AsyncRelayCommand ChooseCutFileCommand { get; }
     public RelayCommand ChooseCutOutputCommand { get; }
     public AsyncRelayCommand CutCommand { get; }
@@ -86,10 +87,10 @@ public sealed class CutViewModel : WorkspaceBase
     {
         await RunBusyAsync(async () =>
         {
-            Host.EnsureFfmpeg(); _ = AudioFormats.FromPath(path); Host.Status = "Reading audio and generating waveform…";
+            Host.EnsureFfmpeg(); _ = AudioFormats.FromPath(path); Host.Status = L.T("ReadingAudioAndGeneratingWaveform");
             var info = await Host.Probe!.ProbeAsync(path, ActiveOperationToken); var peaks = await Host.Audio!.ExtractWaveformAsync(path, 900, info.DurationSeconds, ActiveOperationToken);
             CutSourcePath = path; CutSourceDetails = WorkspaceHost.DescribeSource(info); DurationSeconds = info.DurationSeconds; StartSeconds = 0; EndSeconds = info.DurationSeconds;
-            CutFormat = AudioFormats.FromPath(path); WaveformPeaks = peaks; UpdateOperationProgress(1, $"Ready to cut {Path.GetFileName(path)}");
+            CutFormat = AudioFormats.FromPath(path); WaveformPeaks = peaks; UpdateOperationProgress(1, L.F("ReadyToCut", Path.GetFileName(path)));
         });
     }
 
@@ -100,11 +101,11 @@ public sealed class CutViewModel : WorkspaceBase
             Host.EnsureFfmpeg(); var trim = CreateTrim(); var directory = string.IsNullOrWhiteSpace(CutOutputFolder) ? Path.Combine(Path.GetDirectoryName(CutSourcePath)!, "converted") : CutOutputFolder; Directory.CreateDirectory(directory);
             var output = OutputPathBuilder.Build(CutSourcePath, directory, CutFormat, CutSuffix);
             var options = new ConversionOptions(CutFormat, CutFormat.IsLossy() ? "192k" : null, PreserveMetadata: PreserveMetadata, Overwrite: Overwrite);
-            var itemProgress = new Progress<double>(fraction => UpdateOperationProgress(fraction, "Cutting audio…"));
+            var itemProgress = new Progress<double>(fraction => UpdateOperationProgress(fraction, L.T("CuttingAudio")));
             await Host.Audio!.TrimAsync(CutSourcePath, output, options, trim, itemProgress, ActiveOperationToken);
-            Report = $"Cut completed: {Path.GetFileName(output)}\nOK  {CutSourcePath} -> {output}";
+            Report = L.F("CutCompletedOK", Path.GetFileName(output), CutSourcePath, output);
             Host.SetLastOutputFolder(this, directory);
-            UpdateOperationProgress(1, $"Cut completed: {Path.GetFileName(output)}");
+            UpdateOperationProgress(1, L.F("CutCompleted", Path.GetFileName(output)));
         });
     }
 
@@ -113,11 +114,11 @@ public sealed class CutViewModel : WorkspaceBase
         await RunBusyAsync(async () =>
         {
             Host.EnsureFfmpeg(); Host.StopPreview(); var output = AppPaths.PreviewWave;
-            Host.Status = "Rendering local preview…";
-            var previewProgress = new Progress<double>(fraction => UpdateOperationProgress(fraction, "Rendering local preview…"));
+            Host.Status = L.T("RenderingLocalPreview");
+            var previewProgress = new Progress<double>(fraction => UpdateOperationProgress(fraction, L.T("RenderingLocalPreview")));
             await Host.Audio!.RenderPreviewAsync(CutSourcePath, output, CreateTrim(), previewProgress, ActiveOperationToken);
             Host.PlayPreview(output, position => CutPlayheadSeconds = position, StartSeconds, SelectionDuration, 1);
-            UpdateOperationProgress(1, "Playing cut preview.");
+            UpdateOperationProgress(1, L.T("PlayingCutPreview"));
         });
     }
 

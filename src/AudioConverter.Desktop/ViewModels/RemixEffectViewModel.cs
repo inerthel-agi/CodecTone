@@ -1,5 +1,6 @@
 using AudioConverter.Core.Remix;
 using AudioConverter.Desktop.Mvvm;
+using L = AudioConverter.Desktop.Localization.Localizer;
 
 namespace AudioConverter.Desktop.ViewModels;
 
@@ -19,15 +20,9 @@ public sealed class RemixEffectViewModel : ObservableObject
     }
 
     public RemixEffectKind Kind { get; }
-    public string Name => Kind switch
-    {
-        RemixEffectKind.TempoPitch => "Tempo / Pitch",
-        RemixEffectKind.LoudnessNormalize => "Loudness Normalize",
-        RemixEffectKind.FadeIn => "Fade In",
-        RemixEffectKind.FadeOut => "Fade Out",
-        RemixEffectKind.BitCrusher => "Bit Crusher",
-        _ => Kind.ToString(),
-    };
+    public string Name => Localization.LocalizeItemConverter.Localize(Kind);
+    /// <summary>Re-reads every label after a language change.</summary>
+    public void RefreshText() => Raise(string.Empty);
     public bool Enabled { get => enabled; set { if (Set(ref enabled, value)) changed(); } }
     public double First { get => first; set { if (Set(ref first, value)) changed(); } }
     public double Second { get => second; set { if (Set(ref second, value)) changed(); } }
@@ -54,41 +49,41 @@ public sealed class RemixEffectViewModel : ObservableObject
     public bool HasThird => Kind is RemixEffectKind.Equalizer or RemixEffectKind.Reverb or RemixEffectKind.Echo or RemixEffectKind.Compressor or RemixEffectKind.Distortion or RemixEffectKind.BitCrusher;
     public string FirstLabel => Kind switch
     {
-        RemixEffectKind.TempoPitch => "Rate · 0.50–2.00×",
-        RemixEffectKind.Bass => "Gain · dB",
-        RemixEffectKind.Equalizer => "Low · dB",
-        RemixEffectKind.Reverb => "Wet mix · 0–1",
-        RemixEffectKind.Echo => "Delay · ms",
-        RemixEffectKind.Volume => "Gain · dB",
-        RemixEffectKind.FadeIn or RemixEffectKind.FadeOut => "Duration · seconds",
-        RemixEffectKind.LoudnessNormalize => "Target · LUFS",
-        RemixEffectKind.Compressor => "Threshold · dB",
-        RemixEffectKind.StereoWidth => "Width · 0–2",
-        RemixEffectKind.HighPass or RemixEffectKind.LowPass => "Frequency · Hz",
-        RemixEffectKind.SoftLimiter => "Ceiling · dB",
-        RemixEffectKind.Distortion => "Drive · dB",
-        RemixEffectKind.BitCrusher => "Bit depth · 1–24",
-        _ => "Value",
+        RemixEffectKind.TempoPitch => L.T("Rate050200"),
+        RemixEffectKind.Bass => L.T("GainDB"),
+        RemixEffectKind.Equalizer => L.T("LowDB"),
+        RemixEffectKind.Reverb => L.T("WetMix01"),
+        RemixEffectKind.Echo => L.T("DelayMs"),
+        RemixEffectKind.Volume => L.T("GainDB"),
+        RemixEffectKind.FadeIn or RemixEffectKind.FadeOut => L.T("DurationSeconds"),
+        RemixEffectKind.LoudnessNormalize => L.T("TargetLUFS2"),
+        RemixEffectKind.Compressor => L.T("ThresholdDB2"),
+        RemixEffectKind.StereoWidth => L.T("Width02"),
+        RemixEffectKind.HighPass or RemixEffectKind.LowPass => L.T("FrequencyHz"),
+        RemixEffectKind.SoftLimiter => L.T("CeilingDB"),
+        RemixEffectKind.Distortion => L.T("DriveDB"),
+        RemixEffectKind.BitCrusher => L.T("BitDepth124"),
+        _ => L.T("Value"),
     };
     public string SecondLabel => Kind switch
     {
-        RemixEffectKind.Bass => "Frequency · Hz",
-        RemixEffectKind.Equalizer => "Mid · dB",
-        RemixEffectKind.Reverb => "Decay · seconds",
-        RemixEffectKind.Echo => "Feedback · 0–0.9",
-        RemixEffectKind.Compressor => "Ratio · 1–10",
-        RemixEffectKind.Distortion => "Clip threshold · 0–1",
-        RemixEffectKind.BitCrusher => "Sample reduction · 1–250",
+        RemixEffectKind.Bass => L.T("FrequencyHz"),
+        RemixEffectKind.Equalizer => L.T("MidDB"),
+        RemixEffectKind.Reverb => L.T("DecaySeconds"),
+        RemixEffectKind.Echo => L.T("Feedback009"),
+        RemixEffectKind.Compressor => L.T("Ratio110"),
+        RemixEffectKind.Distortion => L.T("ClipThreshold01"),
+        RemixEffectKind.BitCrusher => L.T("SampleReduction1250"),
         _ => "",
     };
     public string ThirdLabel => Kind switch
     {
-        RemixEffectKind.Equalizer => "High · dB",
-        RemixEffectKind.Reverb => "Room size · 0–1",
-        RemixEffectKind.Echo => "Wet mix · 0–1",
-        RemixEffectKind.Compressor => "Makeup · dB",
-        RemixEffectKind.Distortion => "Oversample · 1–16",
-        RemixEffectKind.BitCrusher => "Wet mix · 0–1",
+        RemixEffectKind.Equalizer => L.T("HighDB"),
+        RemixEffectKind.Reverb => L.T("RoomSize01"),
+        RemixEffectKind.Echo => L.T("WetMix01"),
+        RemixEffectKind.Compressor => L.T("MakeupDB"),
+        RemixEffectKind.Distortion => L.T("Oversample116"),
+        RemixEffectKind.BitCrusher => L.T("WetMix01"),
         _ => "",
     };
 

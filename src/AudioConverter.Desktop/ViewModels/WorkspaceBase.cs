@@ -3,6 +3,7 @@ using System.Windows.Input;
 using AudioConverter.Core.Models;
 using AudioConverter.Desktop.Mvvm;
 using AudioConverter.Desktop.Services;
+using L = AudioConverter.Desktop.Localization.Localizer;
 
 namespace AudioConverter.Desktop.ViewModels;
 
@@ -28,9 +29,13 @@ public abstract class WorkspaceBase : ObservableObject
     /// <summary>Refreshes text computed in code; XAML text follows the language through bindings.</summary>
     protected virtual void OnLanguageChanged()
     {
-        if (reportIsPlaceholder) { report = Localization.Localizer.T(emptyReportKey); Raise(nameof(Report)); }
-        Raise(nameof(PrimaryLabel));
+        if (reportIsPlaceholder) report = Localization.Localizer.T(emptyReportKey);
+        Raise(string.Empty);
     }
+
+    /// <summary>The text of the first key that <paramref name="value"/> shows in any language, re-read now; otherwise the value.</summary>
+    protected static string Refreshed(string value, params string[] keys) =>
+        keys.FirstOrDefault(key => Localization.Localizer.IsText(value, key)) is { } match ? Localization.Localizer.T(match) : value;
 
     public IReadOnlyList<AudioFormat> Formats => AudioFormats.All;
     public IReadOnlyList<string> Bitrates { get; } = ["96k", "128k", "160k", "192k", "256k", "320k"];
@@ -66,7 +71,7 @@ public abstract class WorkspaceBase : ObservableObject
 
     private async Task SaveReportAsync()
     {
-        var dialog = new Microsoft.Win32.SaveFileDialog { Filter = "Text report|*.txt", FileName = "CodecTone-report.txt" };
+        var dialog = new Microsoft.Win32.SaveFileDialog { Filter = L.T("TextReportTxt"), FileName = "CodecTone-report.txt" };
         if (dialog.ShowDialog() != true) return;
         try { await File.WriteAllTextAsync(dialog.FileName, Report); }
         catch (Exception error) { Host.Log.Write("Save report", error.Message); Dialogs.Error(error.Message); }

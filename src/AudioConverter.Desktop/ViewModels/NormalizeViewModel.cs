@@ -9,6 +9,7 @@ using AudioConverter.Core.Paths;
 using AudioConverter.Desktop.Mvvm;
 using AudioConverter.Infrastructure.Normalize;
 using AudioConverter.Infrastructure.Remix;
+using L = AudioConverter.Desktop.Localization.Localizer;
 
 namespace AudioConverter.Desktop.ViewModels;
 
@@ -16,8 +17,8 @@ namespace AudioConverter.Desktop.ViewModels;
 public sealed class NormalizeViewModel : WorkspaceBase
 {
     private const string AlbumMode = "Album";
-    private const string NoSourceText = "Choose a source. Analyze measures every file; Normalize measures first when needed.";
-    private const string NoAnalysisText = "Analyze measures every file before the plan is shown.";
+    private static string NoSourceText => L.T("ChooseASourceAnalyzeMeasuresEvery");
+    private static string NoAnalysisText => L.T("AnalyzeMeasuresEveryFileBeforeThe");
     private static readonly string[] Presets = ["-14 LUFS", "-16 LUFS", "-23 LUFS"];
 
     private string sourcePath = "";
@@ -42,7 +43,7 @@ public sealed class NormalizeViewModel : WorkspaceBase
     }
 
     public override ICommand PrimaryCommand => NormalizeCommand;
-    public override string PrimaryLabel => "Normalize";
+    public override string PrimaryLabel => L.T("Normalize");
     public RelayCommand ChooseFileCommand { get; }
     public RelayCommand ChooseFolderCommand { get; }
     public RelayCommand ChooseOutputCommand { get; }
@@ -105,6 +106,12 @@ public sealed class NormalizeViewModel : WorkspaceBase
         return Task.CompletedTask;
     }
 
+    protected override void OnLanguageChanged()
+    {
+        planSummary = Refreshed(planSummary, "ChooseASourceAnalyzeMeasuresEvery", "AnalyzeMeasuresEveryFileBeforeThe");
+        base.OnLanguageChanged();
+    }
+
     protected override void RaiseCommands()
     {
         ChooseFileCommand.RaiseCanExecuteChanged();
@@ -124,13 +131,13 @@ public sealed class NormalizeViewModel : WorkspaceBase
         await RunBusyAsync(async () =>
         {
             Host.EnsureFfmpeg();
-            Report = "Analysis started.";
+            Report = L.T("AnalysisStarted");
             var (target, ceiling) = ParseSettings();
             var analysis = await MeasureSourceAsync(1, target, ceiling);
             measurement = analysis;
             RefreshPlan();
             Report = AnalysisReport(analysis);
-            UpdateOperationProgress(1, $"Analysis ready: {analysis.Files.Count} valid file(s)");
+            UpdateOperationProgress(1, L.F("AnalysisReadyValidFileS", analysis.Files.Count));
         });
     }
 
@@ -139,7 +146,7 @@ public sealed class NormalizeViewModel : WorkspaceBase
         await RunBusyAsync(async () =>
         {
             Host.EnsureFfmpeg();
-            Report = "Normalization started.";
+            Report = L.T("NormalizationStarted");
             var (target, ceiling) = ParseSettings();
             var mode = ParseMode();
             // Per-track output needs first-pass values taken at this target and ceiling; album output does not.
@@ -153,16 +160,16 @@ public sealed class NormalizeViewModel : WorkspaceBase
             var files = source.Files.ToDictionary(file => file.Path, StringComparer.OrdinalIgnoreCase);
             var active = plan.Items.Where(item => !item.Skipped).ToArray();
             if (active.Any(item => EncodingFor(files[item.Track.Path]).IsLossy)
-                && !Dialogs.Confirm("Normalizing re-encodes lossy files, which can reduce audio quality slightly. Continue?"))
+                && !Dialogs.Confirm(L.T("NormalizingReEncodesLossyFilesWhich")))
             {
-                Host.Status = "Normalization cancelled.";
+                Host.Status = L.T("NormalizationCancelled");
                 Host.TimingText = "";
                 return;
             }
 
             var outputRoot = ResolveOutputRoot();
             var reportLines = new List<string>(source.Failures);
-            reportLines.AddRange(source.ScanWarnings.Select(warning => "SKIP folder: " + warning));
+            reportLines.AddRange(source.ScanWarnings.Select(warning => L.T("SKIPFolder") + warning));
             foreach (var skipped in plan.Items.Where(item => item.Skipped))
                 reportLines.Add($"SKIP  {skipped.Track.RelativePath}: {skipped.SkipReason}");
 
@@ -186,7 +193,7 @@ public sealed class NormalizeViewModel : WorkspaceBase
                     var progress = new Progress<double>(fraction =>
                     {
                         var share = totalDuration <= 0 ? 1 : (baseDuration + fraction * item.Track.DurationSeconds) / totalDuration;
-                        UpdateOperationProgress(applyStart + share * (1 - applyStart), $"Normalizing {position}/{active.Length}: {Path.GetFileName(file.Path)}");
+                        UpdateOperationProgress(applyStart + share * (1 - applyStart), L.F("Normalizing", position, active.Length, Path.GetFileName(file.Path)));
                     });
                     if (mode == LoudnessMode.Album)
                         await service.ApplyAlbumAsync(job, item.GainDb, ceiling, progress, ActiveOperationToken);
@@ -207,11 +214,11 @@ public sealed class NormalizeViewModel : WorkspaceBase
 
             var skippedCount = plan.Items.Count(item => item.Skipped);
             Report =
-                $"Completed: {succeeded} succeeded, {failed} failed, {skippedCount} skipped\n" +
+                L.F("CompletedSucceededFailedSkippedHeader", succeeded, failed, skippedCount) +
                 DescribePlan(plan) + "\n\n" +
                 string.Join('\n', reportLines);
             if (succeeded > 0) Host.SetLastOutputFolder(this, outputRoot);
-            UpdateOperationProgress(1, $"Normalization completed: {succeeded} succeeded, {failed} failed, {skippedCount} skipped");
+            UpdateOperationProgress(1, L.F("NormalizationCompletedSucceededFailedSki", succeeded, failed, skippedCount));
         });
     }
 
@@ -222,8 +229,8 @@ public sealed class NormalizeViewModel : WorkspaceBase
         var discovered = await Task.Run(() => CompressionFileDiscovery.Find(SourcePath, recursive: true,
                 onSkipped: scanWarnings.Add, cancellationToken: ActiveOperationToken)
             .Where(file => !IsPathInside(file.Path, outputRoot)).ToArray(), ActiveOperationToken);
-        foreach (var warning in scanWarnings) Host.AppendOperationReport("SKIP folder: " + warning);
-        if (discovered.Length == 0) throw new InvalidDataException("No supported audio file was found.");
+        foreach (var warning in scanWarnings) Host.AppendOperationReport(L.T("SKIPFolder") + warning);
+        if (discovered.Length == 0) throw new InvalidDataException(L.T("NoSupportedAudioFileWasFound"));
 
         var service = new NormalizeProcessingService(Host.Tools!);
         var files = new List<MeasuredFile>();
@@ -239,9 +246,9 @@ public sealed class NormalizeViewModel : WorkspaceBase
             }
             catch (OperationCanceledException) { throw; }
             catch (Exception error) { failures.Add($"FAIL  {file.RelativePath}: {error.Message}"); }
-            UpdateOperationProgress(progressWeight * (index + 1d) / discovered.Length, $"Measuring {index + 1}/{discovered.Length}: {Path.GetFileName(file.Path)}");
+            UpdateOperationProgress(progressWeight * (index + 1d) / discovered.Length, L.F("Measuring", index + 1, discovered.Length, Path.GetFileName(file.Path)));
         }
-        if (files.Count == 0) throw new InvalidDataException("No valid audio file remained after measurement.");
+        if (files.Count == 0) throw new InvalidDataException(L.T("NoValidAudioAfterMeasure"));
         return new MeasuredSource(files, failures, scanWarnings, target, ceiling);
     }
 
@@ -277,13 +284,13 @@ public sealed class NormalizeViewModel : WorkspaceBase
             var item = planned is not null && planned.TryGetValue(file.Path, out var found) ? found : null;
             var note = item is null ? ""
                 : item.Skipped ? item.SkipReason ?? ""
-                : item.PeakLimited ? "limited by the true-peak ceiling"
+                : item.PeakLimited ? L.T("LimitedByTheTruePeakCeiling")
                 : "";
             Rows.Add(new NormalizeRow(
                 file.RelativePath,
                 DescribeLoudness(file.Loudness.InputIntegrated),
                 DescribePeak(file.Loudness.InputTruePeak),
-                item is null ? "n/a" : item.Skipped ? "skipped" : $"{Signed(item.GainDb)} dB",
+                item is null ? "n/a" : item.Skipped ? L.T("Skipped") : L.F("DB", Signed(item.GainDb)),
                 note));
         }
         Raise(nameof(HasRows));
@@ -311,14 +318,14 @@ public sealed class NormalizeViewModel : WorkspaceBase
         {
             return selectedTargetPreset is { } preset
                 ? PresetLufs(preset)
-                : throw new ArgumentException("Choose a target loudness.");
+                : throw new ArgumentException(L.T("ChooseATargetLoudness"));
         }
-        if (!TryParseNumber(CustomTargetLufs, out var value)) throw new ArgumentException("Custom target must be a number in LUFS.");
+        if (!TryParseNumber(CustomTargetLufs, out var value)) throw new ArgumentException(L.T("CustomTargetMustBeANumber"));
         return value;
     }
 
     private double ParseCeiling() =>
-        TryParseNumber(TruePeakCeiling, out var value) ? value : throw new ArgumentException("True-peak ceiling must be a number in dBTP.");
+        TryParseNumber(TruePeakCeiling, out var value) ? value : throw new ArgumentException(L.T("TruePeakCeilingMustBeA"));
 
     private (double Target, double Ceiling) ParseSettings()
     {
@@ -335,7 +342,7 @@ public sealed class NormalizeViewModel : WorkspaceBase
         "-14 LUFS" => -14,
         "-16 LUFS" => -16,
         "-23 LUFS" => -23,
-        _ => throw new ArgumentException("Unknown loudness preset."),
+        _ => throw new ArgumentException(L.T("UnknownLoudnessPreset")),
     };
 
     private static bool TryParseNumber(string text, out double value) =>
@@ -352,11 +359,11 @@ public sealed class NormalizeViewModel : WorkspaceBase
 
     private static string AnalysisReport(MeasuredSource source)
     {
-        var lines = new List<string> { $"Analysis completed: {source.Files.Count} valid file(s), {source.Failures.Count} failed." };
+        var lines = new List<string> { L.F("AnalysisCompletedValidFileSFailed", source.Files.Count, source.Failures.Count) };
         lines.AddRange(source.Failures);
-        lines.AddRange(source.ScanWarnings.Select(warning => "SKIP folder: " + warning));
+        lines.AddRange(source.ScanWarnings.Select(warning => L.T("SKIPFolder") + warning));
         lines.AddRange(source.Files.Select(file =>
-            $"OK  {file.RelativePath}: {DescribeLoudness(file.Loudness.InputIntegrated)}, true peak {DescribePeak(file.Loudness.InputTruePeak)}"));
+            L.F("OKTruePeak", file.RelativePath, DescribeLoudness(file.Loudness.InputIntegrated), DescribePeak(file.Loudness.InputTruePeak))));
         return string.Join('\n', lines);
     }
 
@@ -364,39 +371,39 @@ public sealed class NormalizeViewModel : WorkspaceBase
     {
         var name = item.Track.RelativePath;
         var measured = file.Loudness.InputIntegrated;
-        var gain = $"{Signed(item.GainDb)} dB";
+        var gain = L.F("DB", Signed(item.GainDb));
         if (plan.Mode == LoudnessMode.Album)
         {
-            if (LoudnessPlanner.IsSilent(measured)) return $"OK  {name}: silent, {gain} album gain";
-            return $"OK  {name}: {Format1(measured)} → {Format1(measured + item.GainDb)} LUFS ({gain}{(plan.GainCapped ? ", capped by peak" : "")})";
+            if (LoudnessPlanner.IsSilent(measured)) return L.F("OKSilentAlbumGain", name, gain);
+            return L.F("OKLoudnessChange", name, Format1(measured), Format1(measured + item.GainDb), gain + (plan.GainCapped ? L.T("CappedByPeak") : ""));
         }
-        return $"OK  {name}: {Format1(measured)} → {Format1(plan.TargetLufs)} LUFS ({gain}{(item.PeakLimited ? ", peak-limited" : "")})";
+        return L.F("OKLoudnessChange", name, Format1(measured), Format1(plan.TargetLufs), gain + (item.PeakLimited ? L.T("PeakLimited") : ""));
     }
 
     private static string DescribePlan(LoudnessPlan plan)
     {
         var count = plan.Items.Count;
-        var target = $"target {Format1(plan.TargetLufs)} LUFS";
+        var target = L.F("TargetLUFS", Format1(plan.TargetLufs));
         if (plan.Mode == LoudnessMode.PerTrack)
         {
             var limited = plan.Items.Count(item => item.PeakLimited);
             var silent = plan.Items.Count(item => item.Skipped);
-            return $"Per track · {count} file(s) · {target} · true-peak ceiling {Format1(plan.CeilingDbtp)} dBTP"
-                + (limited > 0 ? $" · {limited} limited by the ceiling" : "")
-                + (silent > 0 ? $" · {silent} silent" : "");
+            return L.F("PerTrackFileSTruePeak", count, target, Format1(plan.CeilingDbtp))
+                + (limited > 0 ? L.F("LimitedByTheCeiling", limited) : "")
+                + (silent > 0 ? L.F("Silent", silent) : "");
         }
 
-        var album = $"Album · {count} file(s) · album loudness {Format1(plan.AlbumLufs ?? 0)} LUFS · gain {Signed(plan.AlbumGainDb ?? 0)} dB";
+        var album = L.F("AlbumFileSAlbumLoudnessLUFS", count, Format1(plan.AlbumLufs ?? 0), Signed(plan.AlbumGainDb ?? 0));
         return plan.GainCapped
-            ? album + $", capped by the {Format1(plan.CeilingDbtp)} dBTP ceiling ({target} not reached)"
+            ? album + L.F("CappedByTheDBTPCeilingNot", Format1(plan.CeilingDbtp), target)
             : album + $" · {target}";
     }
 
     private static string DescribeLoudness(double lufs) =>
-        LoudnessPlanner.IsSilent(lufs) ? "silent" : $"{Format1(lufs)} LUFS";
+        LoudnessPlanner.IsSilent(lufs) ? L.T("Silent2") : L.F("LUFS", Format1(lufs));
 
     private static string DescribePeak(double dbtp) =>
-        double.IsFinite(dbtp) ? $"{Format1(dbtp)} dBTP" : "n/a";
+        double.IsFinite(dbtp) ? L.F("DBTP", Format1(dbtp)) : "n/a";
 
     private static string Format1(double value) => value.ToString("0.0", CultureInfo.InvariantCulture);
 

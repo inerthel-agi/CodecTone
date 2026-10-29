@@ -1,4 +1,5 @@
 using AudioConverter.Desktop.Mvvm;
+using L = AudioConverter.Desktop.Localization.Localizer;
 
 namespace AudioConverter.Desktop.ViewModels;
 
@@ -7,7 +8,7 @@ public enum QueueState { Waiting, Running, Done, Failed, Skipped }
 /// <summary>One file in a batch, with its own status line and progress.</summary>
 public sealed class QueueItem(string path, string name) : ObservableObject
 {
-    private string status = "Waiting";
+    private string status = L.T("Waiting");
     private double progress;
     private QueueState state;
     private bool included = true;

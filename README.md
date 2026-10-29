@@ -1,6 +1,6 @@
 # CodecTone
 
-CodecTone converts, compresses, cuts, remixes, and extracts embedded album artwork locally on Windows with FFmpeg. It provides a WPF interface and a command-line executable. Media processing does not use cloud storage or telemetry.
+CodecTone converts, compresses, normalizes, cuts, splits, remixes, tags, and inspects audio files locally on Windows with FFmpeg. It also extracts embedded album artwork. It provides a WPF interface and a command-line executable. Media processing does not use cloud storage or telemetry.
 
 Repository: [github.com/inerthel-agi/CodecTone](https://github.com/inerthel-agi/CodecTone)
 
@@ -35,18 +35,24 @@ release\cli\CodecTone.Cli.exe
 
 ## Usage
 
-The GUI has a sidebar with five tool workspaces, an About page, and a theme button that cycles OLED, White, and Glass. Glass shows a live acrylic backdrop on Windows 11 22H2 or newer when **Transparency effects** is on; otherwise it uses an opaque tinted background.
+The GUI has a sidebar with nine tool workspaces, an About page, a theme button, and a language button. The theme button cycles OLED, White, and Glass. Glass shows a live acrylic backdrop on Windows 11 22H2 or newer when **Transparency effects** is on; otherwise it uses an opaque tinted background. The language button cycles System, English, and Français. System follows the Windows display language: French when Windows is in French, English otherwise.
 
-- **Convert** processes one file or a non-recursive folder batch.
+- **Convert** queues files and non-recursive folders, then converts them in order with a status per file.
+- **Compress** uses quality profiles or a total-size budget and scans folders recursively. Switch a file off to leave it out.
+- **Normalize** measures loudness and brings each track, or a whole album with one gain, to -14, -16, -23 LUFS or a custom target under a true-peak ceiling.
 - **Cut** selects a waveform range, applies fades, previews it, and exports it.
-- **Compress** uses quality profiles or a total-size budget and scans folders recursively.
+- **Split album** cuts one long recording into tracks from a cue sheet or from detected silences, and names files with a pattern such as `{track:00} - {title}`.
+- **Remix** applies 33 categorized presets or an ordered effect rack to one song and edits its metadata. **Save as preset** stores your own racks. The EARRAPE preset displays an explicit hearing warning.
+- **Tags** edits tags for many files at once and can rename files from their tags.
 - **Artwork** extracts one embedded front cover per album as the original image, PNG, JPEG, or WebP.
-- **Remix** applies 33 categorized presets or an ordered effect rack to one song and edits its metadata. The EARRAPE preset displays an explicit hearing warning.
+- **Inspect** shows a spectrogram and file details, and flags lossless files whose spectrum stops like a lossy encode.
 - **About** explains the local processing pipeline and links to the maintainer profile.
+
+CodecTone remembers the theme, the language, and each tool's choices in `%LOCALAPPDATA%\AudioConverter\settings.json`. Saved remix presets live in `remix-presets.json` in the same folder. The taskbar button shows the progress of the running operation.
 
 Drop a file or folder anywhere in the window, or use **Choose file** and **Choose folder**. After an operation succeeds, **Open folder** in the bottom bar opens its output folder. While an operation runs, **Cancel** replaces the main action button.
 
-In Cut and Remix, the playback controls sit under the waveform. Click the waveform to focus it, then use the arrow keys to nudge the selected handle (Shift: 1 s); `[` and `]` pick the handle. In Remix, play **Original** and **Remix** to compare the same source interval. Preview volume defaults to 25%, applies on the next playback, and does not affect exports. Transitions follow the Windows **Animation effects** setting.
+In Cut and Remix, the playback controls sit under the waveform. **Pause** pauses and resumes; click the time ruler to seek. Click the waveform to focus it, then use the arrow keys to nudge the selected handle (Shift: 1 s); `[` and `]` pick the handle. In Remix, play **Original** and **Remix** to compare the same source interval. Preview volume defaults to 25%, applies while playing, and does not affect exports. Transitions follow the Windows **Animation effects** setting.
 
 In Artwork, analyze a folder, select an album, then choose **Preview cover**. **Save report** exports the current report to text. About provides **Open local diagnostics**; the rotating log stays local and can include file paths.
 
@@ -122,10 +128,13 @@ dotnet test AudioConverter.sln -c Release
 - Target-total-size mode is unavailable for lossless FLAC output.
 - WAV, raw AAC, and OGG output do not receive embedded cover art.
 - Metadata support depends on the source and destination containers.
-- Preview supports Play and Stop, without pause or cursor scrubbing. Rendering late excerpts processes preceding audio to preserve effects and fades.
+- Rendering late preview excerpts processes preceding audio to preserve effects and fades.
 - Preview loudness normalization is single-pass; final export uses two-pass measurements and may sound different.
 - Remix processes one song at a time and does not load VST plugins.
 - Artwork extraction does not search online services or modify source audio files.
+- Inspect flags any lossless file whose energy stops below 20 kHz, so band-limited recordings can be reported as lossy sources.
+- Tags renames files inside their current folder only.
+- The French interface translates CodecTone's own text. Messages from FFmpeg, ffprobe, and the processing engine (skip reasons, validation errors) stay in English, as do remix preset names.
 - Video conversion, web services, cloud storage, and telemetry are not implemented.
 
 ## License

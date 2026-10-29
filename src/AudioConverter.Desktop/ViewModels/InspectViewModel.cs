@@ -9,6 +9,7 @@ using AudioConverter.Desktop.Mvvm;
 using AudioConverter.Desktop.Services;
 using AudioConverter.Infrastructure.Inspection;
 using AudioConverter.Infrastructure.Storage;
+using L = AudioConverter.Desktop.Localization.Localizer;
 
 namespace AudioConverter.Desktop.ViewModels;
 
@@ -27,21 +28,21 @@ public sealed class InspectViewModel : WorkspaceBase
     private string inspectSourcePath = "";
     private string inspectSourceDetails = "";
     private string durationLabel = "";
-    private string cutoffVerdict = "Choose a file to check for a lossy cutoff.";
+    private string cutoffVerdict = L.T("ChooseAFileToCheckFor");
     private double sourceDurationSeconds;
     private BitmapImage? spectrogram;
     private IReadOnlyList<SpectrogramLabel> axisLabels = [];
     private IReadOnlyList<InspectDetail> fileDetails = [];
     private IReadOnlyList<InspectDetail> tags = [];
 
-    public InspectViewModel(WorkspaceHost host) : base(host, "Inspect", "Nothing has run yet.")
+    public InspectViewModel(WorkspaceHost host) : base(host, "Inspect", "ReportEmptyGeneric")
     {
         ChooseInspectFileCommand = new AsyncRelayCommand(async () => { var path = Dialogs.ChooseAudioFile(); if (path is not null) await LoadAsync(path); }, () => !Host.IsBusy);
         SaveSpectrogramCommand = new AsyncRelayCommand(SaveSpectrogramAsync, () => !Host.IsBusy && Spectrogram is not null);
     }
 
     public override ICommand PrimaryCommand => SaveSpectrogramCommand;
-    public override string PrimaryLabel => "Save spectrogram";
+    public override string PrimaryLabel => L.T("SaveSpectrogram");
     public AsyncRelayCommand ChooseInspectFileCommand { get; }
     public AsyncRelayCommand SaveSpectrogramCommand { get; }
     public double SpectrogramHeightPx => SpectrogramHeight;
@@ -66,6 +67,12 @@ public sealed class InspectViewModel : WorkspaceBase
         catch (IOException error) { Host.Log.Write("Cleanup", error.Message); }
         catch (UnauthorizedAccessException error) { Host.Log.Write("Cleanup", error.Message); }
         return Task.CompletedTask;
+    }
+
+    protected override void OnLanguageChanged()
+    {
+        cutoffVerdict = Refreshed(cutoffVerdict, "ChooseAFileToCheckFor");
+        base.OnLanguageChanged();
     }
 
     protected override void RaiseCommands()
@@ -94,15 +101,16 @@ public sealed class InspectViewModel : WorkspaceBase
             .ToArray();
         DurationLabel = TimestampParser.Format(info.DurationSeconds);
         sourceDurationSeconds = info.DurationSeconds;
-        CutoffVerdict = verdict.Message;
+        var message = L.F("Verdict" + verdict.Kind, cutoff is { } hz ? (hz / 1000d).ToString("0.##") : "");
+        CutoffVerdict = message;
         Report = string.Join('\n', new[]
         {
-            "OK  Spectrogram rendered",
+            L.T("OKSpectrogramRendered"),
             verdict.Kind switch
             {
-                SourceVerdictKind.LikelyLossySource => "FAIL  " + verdict.Message,
-                SourceVerdictKind.FullBand => "OK  " + verdict.Message,
-                _ => verdict.Message,
+                SourceVerdictKind.LikelyLossySource => "FAIL  " + message,
+                SourceVerdictKind.FullBand => "OK  " + message,
+                _ => message,
             },
         });
         RaiseCommands();
@@ -113,51 +121,51 @@ public sealed class InspectViewModel : WorkspaceBase
         await RunBusyAsync(async () =>
         {
             Host.EnsureFfmpeg();
-            Host.Status = "Reading audio…";
+            Host.Status = L.T("ReadingAudio");
             var info = await Host.Probe!.ProbeAsync(path, ActiveOperationToken);
-            UpdateOperationProgress(0.3, "Drawing spectrogram…");
+            UpdateOperationProgress(0.3, L.T("DrawingSpectrogram"));
             var analysisImage = Path.Combine(workDirectory, "analysis.png");
             await new SpectrogramService(Host.Tools!).RenderAsync(
                 path, analysisImage, AnalysisWidth, AnalysisHeight, legend: false, durationSeconds: info.DurationSeconds, cancellationToken: ActiveOperationToken);
             ShowAnalysis(path, info, analysisImage);
-            UpdateOperationProgress(1, $"Spectrogram ready: {Path.GetFileName(path)}");
+            UpdateOperationProgress(1, L.F("SpectrogramReady", Path.GetFileName(path)));
         });
     }
 
     private async Task SaveSpectrogramAsync()
     {
-        var target = Dialogs.ChooseSaveFile("PNG image|*.png", Path.GetFileNameWithoutExtension(InspectSourcePath) + "-spectrogram.png");
+        var target = Dialogs.ChooseSaveFile(L.T("PNGImagePng"), Path.GetFileNameWithoutExtension(InspectSourcePath) + "-spectrogram.png");
         if (target is null) return;
         await RunBusyAsync(async () =>
         {
             Host.EnsureFfmpeg();
-            UpdateOperationProgress(0.2, "Rendering spectrogram with legend…");
+            UpdateOperationProgress(0.2, L.T("RenderingSpectrogramWithLegend"));
             await new SpectrogramService(Host.Tools!).RenderAsync(
                 InspectSourcePath, target, SaveWidth, SaveHeight, legend: true, durationSeconds: sourceDurationSeconds, cancellationToken: ActiveOperationToken);
             Host.SetLastOutputFolder(this, Path.GetDirectoryName(Path.GetFullPath(target))!);
-            AppendReport($"OK  Spectrogram saved: {target}");
-            UpdateOperationProgress(1, $"Spectrogram saved: {Path.GetFileName(target)}");
+            AppendReport(L.F("OKSpectrogramSaved", target));
+            UpdateOperationProgress(1, L.F("SpectrogramSaved", Path.GetFileName(target)));
         });
     }
 
     private static IReadOnlyList<InspectDetail> DescribeFile(string path, ProbeInfo info) =>
     [
-        new("Codec", info.CodecName.ToUpperInvariant()),
-        new("Container", Path.GetExtension(path).TrimStart('.').ToUpperInvariant()),
-        new("Audio bitrate", info.AudioBitrateKbps is { } kbps ? $"{kbps} kbps" : "Not reported"),
-        new("Sample rate", info.SampleRate is { } rate ? (rate / 1000d).ToString("0.##", CultureInfo.InvariantCulture) + " kHz" : "Not reported"),
-        new("Bit depth", info.BitDepth is { } depth ? $"{depth}-bit" : "Not reported"),
-        new("Channels", ChannelLabel(info.Channels)),
-        new("Duration", TimestampParser.Format(info.DurationSeconds)),
-        new("File size", info.SizeBytes is { } size ? WorkspaceHost.FormatBytes(size) : "Unknown"),
+        new(L.T("Codec"), info.CodecName.ToUpperInvariant()),
+        new(L.T("Container"), Path.GetExtension(path).TrimStart('.').ToUpperInvariant()),
+        new(L.T("AudioBitrate"), info.AudioBitrateKbps is { } kbps ? L.F("Kbps", kbps) : L.T("NotReported")),
+        new(L.T("SampleRate"), info.SampleRate is { } rate ? (rate / 1000d).ToString("0.##", CultureInfo.InvariantCulture) + " kHz" : L.T("NotReported")),
+        new(L.T("BitDepth"), info.BitDepth is { } depth ? L.F("Bit", depth) : L.T("NotReported")),
+        new(L.T("Channels"), ChannelLabel(info.Channels)),
+        new(L.T("Duration"), TimestampParser.Format(info.DurationSeconds)),
+        new(L.T("FileSize"), info.SizeBytes is { } size ? WorkspaceHost.FormatBytes(size) : L.T("Unknown")),
     ];
 
     private static string ChannelLabel(int? channels) => channels switch
     {
-        null => "Not reported",
-        1 => "Mono (1)",
-        2 => "Stereo (2)",
-        int count => $"{count} channels",
+        null => L.T("NotReported"),
+        1 => L.T("Mono1"),
+        2 => L.T("Stereo2"),
+        int count => L.F("Channels2", count),
     };
 
     private static string Shorten(string value)

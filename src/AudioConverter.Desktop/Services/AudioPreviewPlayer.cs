@@ -56,7 +56,7 @@ public sealed class AudioPreviewPlayer : IDisposable
         Stop();
         var (format, data) = ReadPcmWave(path);
         var result = waveOutOpen(out device, WaveMapper, ref format, 0, 0, 0);
-        if (result != 0) { device = 0; throw new InvalidOperationException($"No audio output is available to play the preview (waveOut error {result})."); }
+        if (result != 0) { device = 0; throw new InvalidOperationException(Localization.Localizer.F("NoAudioOutputForPreview", result)); }
         buffer = Marshal.AllocHGlobal(data.Length);
         Marshal.Copy(data, 0, buffer, data.Length);
         header = Marshal.AllocHGlobal((int)HeaderSize);

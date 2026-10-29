@@ -62,7 +62,8 @@ public sealed class ReportLinesConverter : IValueConverter
                 _ when line.StartsWith("OK ", StringComparison.Ordinal) => (ReportLineKind.Ok, line[3..]),
                 _ when line.StartsWith("FAIL ", StringComparison.Ordinal) => (ReportLineKind.Fail, line[5..]),
                 _ when line.StartsWith("SKIP ", StringComparison.Ordinal) => (ReportLineKind.Skip, line[5..]),
-                _ when line.StartsWith("CANCELLED", StringComparison.Ordinal) => (ReportLineKind.Cancelled, line),
+                _ when line.StartsWith("CANCELLED", StringComparison.Ordinal) => (ReportLineKind.Cancelled, line[9..].TrimStart('.', ' ')),
+                _ when line.StartsWith("READY ", StringComparison.Ordinal) => (ReportLineKind.Info, line[6..]),
                 _ => (ReportLineKind.Info, line),
             };
             body = body.Trim();

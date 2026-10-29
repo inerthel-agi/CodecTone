@@ -20,7 +20,7 @@ public interface IDialogService
 
 public sealed class DialogService : IDialogService
 {
-    public const string AudioFilter = "Audio files|*.mp3;*.flac;*.wav;*.ogg;*.aac;*.m4a|All files|*.*";
+    private static string AudioFilter => $"{Localization.Localizer.T("AudioFiles")}|*.mp3;*.flac;*.wav;*.ogg;*.aac;*.m4a|{Localization.Localizer.T("AllFiles")}|*.*";
 
     public string? ChooseAudioFile()
     {
@@ -56,7 +56,7 @@ public sealed class DialogService : IDialogService
     {
         var dialog = new OpenFileDialog
         {
-            Filter = "Cover images|*.png;*.jpg;*.jpeg;*.webp|All files|*.*",
+            Filter = $"{Localization.Localizer.T("CoverImages")}|*.png;*.jpg;*.jpeg;*.webp|{Localization.Localizer.T("AllFiles")}|*.*",
             CheckFileExists = true,
             Multiselect = false,
         };

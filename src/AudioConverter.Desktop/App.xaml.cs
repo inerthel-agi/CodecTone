@@ -4,8 +4,8 @@ using AudioConverter.Desktop.ViewModels;
 namespace AudioConverter.Desktop;
 public partial class App : Application
 {
-    private const string MutexName = "Local\\StealthyLabs.AudioConverter.SingleInstance";
-    private const string ActivationEventName = "Local\\StealthyLabs.AudioConverter.Activate";
+    private const string MutexName = "Local\\Inerthel.AudioConverter.SingleInstance";
+    private const string ActivationEventName = "Local\\Inerthel.AudioConverter.Activate";
     private Mutex? instanceMutex;
     private EventWaitHandle? activationEvent;
     private readonly CancellationTokenSource shutdown = new();
@@ -26,6 +26,7 @@ public partial class App : Application
         }
 
         activationEvent = new EventWaitHandle(false, EventResetMode.AutoReset, ActivationEventName);
+        if (!SystemParameters.ClientAreaAnimation) ThemeService.DisableMotion(Resources);
         var viewModel = new MainViewModel(new DialogService());
         var window = new MainWindow { DataContext = viewModel };
         MainWindow = window;

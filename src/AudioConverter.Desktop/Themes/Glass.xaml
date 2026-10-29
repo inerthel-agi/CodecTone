@@ -1,0 +1,13 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Dark glass: translucent layers over the Windows 11 acrylic backdrop. ThemeService swaps BackdropBrush for GlassFallbackBrush when the backdrop is unavailable. -->
+    <SolidColorBrush x:Key="BackdropBrush" Color="Transparent" /><SolidColorBrush x:Key="PopupBrush" Color="#24252B" />
+    <!-- Used when Windows cannot draw acrylic: a dim blue-violet-warm wash so the translucent layers still read as glass. -->
+    <LinearGradientBrush x:Key="GlassFallbackBrush" StartPoint="0,0" EndPoint="1,1"><GradientStop Color="#1C2233" Offset="0" /><GradientStop Color="#191824" Offset="0.55" /><GradientStop Color="#261D1F" Offset="1" /></LinearGradientBrush>
+    <SolidColorBrush x:Key="WindowBrush" Color="#121318" /><SolidColorBrush x:Key="PanelBrush" Color="#14FFFFFF" /><SolidColorBrush x:Key="PanelRaisedBrush" Color="#1AFFFFFF" /><SolidColorBrush x:Key="InputBrush" Color="#33000000" />
+    <SolidColorBrush x:Key="TextBrush" Color="#F4F5F7" /><SolidColorBrush x:Key="MutedTextBrush" Color="#BCC0C8" />
+    <!-- Brighter top edge, dimmer bottom edge: the specular rim of a glass layer. -->
+    <LinearGradientBrush x:Key="BorderBrush" StartPoint="0,0" EndPoint="0,1"><GradientStop Color="#59FFFFFF" Offset="0" /><GradientStop Color="#1FFFFFFF" Offset="1" /></LinearGradientBrush>
+    <SolidColorBrush x:Key="AccentBrush" Color="#3FCF9F" /><SolidColorBrush x:Key="AccentMutedBrush" Color="#263FCF9F" /><SolidColorBrush x:Key="OnAccentBrush" Color="#06120D" /><SolidColorBrush x:Key="DangerBrush" Color="#FF8080" />
+    <SolidColorBrush x:Key="HoverBrush" Color="#1FFFFFFF" /><SolidColorBrush x:Key="SelectedBrush" Color="#33FFFFFF" />
+    <CornerRadius x:Key="CardRadius">18</CornerRadius><CornerRadius x:Key="ControlRadius">12</CornerRadius>
+</ResourceDictionary>

@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Windows;
+using System.Windows.Threading;
 using AudioConverter.Core.Compression;
 using AudioConverter.Core.Artwork;
 using AudioConverter.Core.Models;
@@ -48,6 +49,18 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     private bool disposed;
     private AudioAnalysis? remixAnalysis;
     private string activeWorkspace = "Convert";
+    private string? lastOutputFolder;
+    private string? lastOutputWorkspace;
+    private string cutSourceDetails = "";
+    private string remixSourceDetails = "";
+    private DispatcherTimer? playheadTimer;
+    private readonly Stopwatch playheadClock = new();
+    private bool playheadOnRemix;
+    private double playheadStart;
+    private double playheadLength;
+    private double playheadRate = 1;
+    private double cutPlayheadSeconds = double.NaN;
+    private double remixPlayheadSeconds = double.NaN;
     private bool isBusy;
     private bool ffmpegMissing;
     private string theme = "Oled";
@@ -147,7 +160,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         ChooseCutOutputCommand = new RelayCommand(() => CutOutputFolder = dialogs.ChooseFolder(CutOutputFolder) ?? CutOutputFolder);
         CutCommand = new AsyncRelayCommand(CutAsync, () => !IsBusy && DurationSeconds > 0);
         PreviewCommand = new AsyncRelayCommand(PreviewAsync, () => !IsBusy && DurationSeconds > 0);
-        StopPreviewCommand = new RelayCommand(() => { CancelActiveOperation(); previewPlayer.Stop(); Status = "Preview stopped."; });
+        StopPreviewCommand = new RelayCommand(() => { CancelActiveOperation(); previewPlayer.Stop(); StopPlayhead(); Status = "Preview stopped."; });
         ChooseCompressionFileCommand = new AsyncRelayCommand(ChooseCompressionFileAsync, () => !IsBusy);
         ChooseCompressionFolderCommand = new AsyncRelayCommand(ChooseCompressionFolderAsync, () => !IsBusy);
         ChooseCompressionOutputCommand = new RelayCommand(() => CompressionOutputFolder = dialogs.ChooseFolder(CompressionOutputFolder) ?? CompressionOutputFolder);
@@ -174,7 +187,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         AddMetadataTagCommand = new RelayCommand(() => RemixCustomTags.Add(new MetadataTagViewModel()));
         RemoveMetadataTagCommand = new RelayCommand<MetadataTagViewModel>(tag => RemixCustomTags.Remove(tag));
         PreviewRemixCommand = new AsyncRelayCommand(() => PreviewRemixAsync(), () => !IsBusy && RemixDurationSeconds > 0);
-        StopRemixCommand = new RelayCommand(() => { CancelActiveOperation(); previewPlayer.Stop(); Status = "Remix preview stopped."; });
+        StopRemixCommand = new RelayCommand(() => { CancelActiveOperation(); previewPlayer.Stop(); StopPlayhead(); Status = "Remix preview stopped."; });
         CancelOperationCommand = new RelayCommand(CancelActiveOperation);
         ExportRemixCommand = new AsyncRelayCommand(ExportRemixAsync, () => !IsBusy && RemixDurationSeconds > 0);
         PreviewOriginalCommand = new AsyncRelayCommand(() => PreviewRemixAsync(true), () => !IsBusy && RemixDurationSeconds > 0);
@@ -182,6 +195,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         SaveReportCommand = new AsyncRelayCommand(SaveReportAsync, () => !IsBusy);
         OpenDiagnosticsCommand = new RelayCommand(OpenDiagnostics);
         OpenArtworkFolderCommand = new RelayCommand(OpenArtworkFolder);
+        OpenOutputFolderCommand = new RelayCommand(() => OpenFolder(lastOutputFolder));
     }
 
     public IReadOnlyList<AudioFormat> Formats => AudioFormats.All;
@@ -202,11 +216,17 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     public string AboutTabState => IsAboutPage ? "Active" : "Inactive";
     public string RemixTabState => IsRemixPage ? "Active" : "Inactive";
     public string ProductVersion => typeof(MainViewModel).Assembly.GetName().Version?.ToString(3) ?? "1.2.0";
-    public bool IsBusy { get => isBusy; private set { if (Set(ref isBusy, value)) { Raise(nameof(IsWorkspaceEnabled)); RaiseCommands(); } } }
+    public bool IsBusy { get => isBusy; private set { if (Set(ref isBusy, value)) { Raise(nameof(IsWorkspaceEnabled)); Raise(nameof(ShowOpenOutputFolder)); RaiseCommands(); } } }
+    public bool ShowOpenOutputFolder => !IsBusy && lastOutputFolder is not null && lastOutputWorkspace == activeWorkspace;
+    public string CutSourceDetails { get => cutSourceDetails; private set => Set(ref cutSourceDetails, value); }
+    public string RemixSourceDetails { get => remixSourceDetails; private set => Set(ref remixSourceDetails, value); }
+    public double CutPlayheadSeconds { get => cutPlayheadSeconds; private set => Set(ref cutPlayheadSeconds, value); }
+    public double RemixPlayheadSeconds { get => remixPlayheadSeconds; private set => Set(ref remixPlayheadSeconds, value); }
     public bool IsWorkspaceEnabled => !IsBusy && !closing;
     public bool FfmpegMissing { get => ffmpegMissing; private set => Set(ref ffmpegMissing, value); }
-    public string Theme { get => theme; private set { if (Set(ref theme, value)) Raise(nameof(ThemeButtonText)); } }
-    public string ThemeButtonText => Theme.Equals("Oled", StringComparison.OrdinalIgnoreCase) ? "WHITE" : "OLED";
+    public string Theme { get => theme; private set { if (Set(ref theme, value)) { Raise(nameof(ThemeButtonText)); Raise(nameof(ThemeButtonToolTip)); } } }
+    public string ThemeButtonText => $"Theme · {ThemeService.DisplayName(Theme)}";
+    public string ThemeButtonToolTip => $"Switch to {ThemeService.DisplayName(ThemeService.Next(Theme))}";
     public string SourcePath { get => sourcePath; set { if (Set(ref sourcePath, value)) RaiseCommands(); } }
     public string OutputFolder { get => outputFolder; set => Set(ref outputFolder, value); }
     public string Suffix { get => suffix; set => Set(ref suffix, value); }
@@ -407,6 +427,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     public AsyncRelayCommand SaveReportCommand { get; }
     public RelayCommand OpenDiagnosticsCommand { get; }
     public RelayCommand OpenArtworkFolderCommand { get; }
+    public RelayCommand OpenOutputFolderCommand { get; }
     public double PreviewVolume
     {
         get => previewVolume;
@@ -425,7 +446,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     {
         var settings = await settingsStore.LoadAsync();
         if (closing) return;
-        Theme = settings.Theme; OutputFolder = settings.LastOutputDirectory ?? ""; ThemeService.Apply(Theme);
+        Theme = ThemeService.Normalize(settings.Theme); OutputFolder = settings.LastOutputDirectory ?? ""; ThemeService.Apply(Theme);
         TryLocateFfmpeg();
     }
 
@@ -465,7 +486,24 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         Raise(nameof(ArtworkTabState));
         Raise(nameof(AboutTabState));
         Raise(nameof(RemixTabState));
+        Raise(nameof(ShowOpenOutputFolder));
     }
+
+    private void SetLastOutputFolder(string directory)
+    {
+        lastOutputFolder = directory;
+        lastOutputWorkspace = operationWorkspace;
+        Raise(nameof(ShowOpenOutputFolder));
+    }
+
+    private static string DescribeSource(ProbeInfo info) => string.Join(" · ", new[]
+    {
+        info.CodecName.ToUpperInvariant(),
+        info.SampleRate is { } rate ? $"{rate / 1000d:0.#} kHz" : null,
+        info.BitDepth is { } depth ? $"{depth}-bit" : null,
+        TimestampParser.Format(info.DurationSeconds),
+        info.SizeBytes is { } size ? FormatBytes(size) : null,
+    }.Where(part => !string.IsNullOrEmpty(part)));
 
     private void OpenGitHub()
     {
@@ -554,6 +592,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             var info = await probe!.ProbeAsync(path, ActiveOperationToken);
             var peaks = await audio!.ExtractWaveformAsync(path, 900, info.DurationSeconds, ActiveOperationToken);
             RemixSourcePath = path;
+            RemixSourceDetails = DescribeSource(info);
             RemixDurationSeconds = info.DurationSeconds;
             remixSampleRate = info.SampleRate ?? 44_100;
             remixSourceHasCover = info.HasCoverArt;
@@ -698,6 +737,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             var rack = original ? Array.Empty<RemixEffect>() : BuildRemixRack();
             RemixRackValidator.Validate(rack, RemixDurationSeconds);
             previewPlayer.Stop();
+            StopPlayhead();
             var progress = new Progress<double>(fraction => UpdateOperationProgress(fraction, "Rendering 20-second remix preview…"));
             var output = await remix!.RenderPreviewAsync(
                 RemixSourcePath,
@@ -709,6 +749,8 @@ public sealed class MainViewModel : ObservableObject, IDisposable
                 ActiveOperationToken,
                 previewGain: PreviewVolume / 100);
             previewPlayer.Play(output);
+            var rate = original ? 1 : rack.OfType<TempoPitchEffect>().FirstOrDefault(effect => effect.Enabled)?.Rate ?? 1;
+            StartPlayhead(true, RemixPreviewStartSeconds, RemixPreviewEndSeconds - RemixPreviewStartSeconds, rate);
             UpdateOperationProgress(1, original ? "Playing original excerpt." : "Playing remix excerpt.");
         });
     }
@@ -750,6 +792,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
                 progress,
                 ActiveOperationToken);
             RemixReport = $"Export completed\nSource: {RemixSourcePath}\nOutput: {output}\nEffects: {rack.Count(effect => effect.Enabled)}\nDuration: {TimestampParser.Format(RemixOutputDuration)}";
+            SetLastOutputFolder(directory);
             UpdateOperationProgress(1, $"Remix exported: {Path.GetFileName(output)}");
         });
     }
@@ -837,6 +880,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
                     await audio!.ConvertAsync(file, output, options, info.DurationSeconds, itemProgress, ActiveOperationToken);
                     results.Add(new FileResult(file, output, null));
                     AppendOperationReport($"OK  {file} -> {output}");
+                    SetLastOutputFolder(directory);
                 }
                 catch (OperationCanceledException) { throw; }
                 catch (Exception error) { results.Add(new FileResult(file, null, error.Message)); AppendOperationReport($"FAIL  {file}: {error.Message}"); }
@@ -854,7 +898,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         {
             EnsureFfmpeg(); _ = AudioFormats.FromPath(path); Status = "Reading audio and generating waveform…";
             var info = await probe!.ProbeAsync(path, ActiveOperationToken); var peaks = await audio!.ExtractWaveformAsync(path, 900, info.DurationSeconds, ActiveOperationToken);
-            CutSourcePath = path; DurationSeconds = info.DurationSeconds; StartSeconds = 0; EndSeconds = info.DurationSeconds;
+            CutSourcePath = path; CutSourceDetails = DescribeSource(info); DurationSeconds = info.DurationSeconds; StartSeconds = 0; EndSeconds = info.DurationSeconds;
             CutFormat = AudioFormats.FromPath(path); WaveformPeaks = peaks; UpdateOperationProgress(1, $"Ready to cut {Path.GetFileName(path)}");
         });
     }
@@ -869,6 +913,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             var itemProgress = new Progress<double>(fraction => UpdateOperationProgress(fraction, "Cutting audio…"));
             await audio!.TrimAsync(CutSourcePath, output, options, trim, itemProgress, ActiveOperationToken);
             Report = $"Cut completed: {Path.GetFileName(output)}\nOK  {CutSourcePath} -> {output}";
+            SetLastOutputFolder(directory);
             UpdateOperationProgress(1, $"Cut completed: {Path.GetFileName(output)}");
         });
     }
@@ -877,11 +922,12 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     {
         await RunBusyAsync(async () =>
         {
-            EnsureFfmpeg(); previewPlayer.Stop(); var output = AppPaths.PreviewWave;
+            EnsureFfmpeg(); previewPlayer.Stop(); StopPlayhead(); var output = AppPaths.PreviewWave;
             Status = "Rendering local preview…";
             var previewProgress = new Progress<double>(fraction => UpdateOperationProgress(fraction, "Rendering local preview…"));
             await audio!.RenderPreviewAsync(CutSourcePath, output, CreateTrim(), previewProgress, ActiveOperationToken);
             previewPlayer.Play(output);
+            StartPlayhead(false, StartSeconds, SelectionDuration, 1);
             UpdateOperationProgress(1, "Playing cut preview.");
         });
     }
@@ -933,10 +979,15 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
     private void OpenArtworkFolder()
     {
+        try { OpenFolder(ResolveArtworkOutputRoot()); }
+        catch (Exception error) { dialogs.Error(error.Message); }
+    }
+
+    private void OpenFolder(string? directory)
+    {
         try
         {
-            var directory = ResolveArtworkOutputRoot();
-            if (!Directory.Exists(directory)) { dialogs.Error("The output folder does not exist yet."); return; }
+            if (directory is null || !Directory.Exists(directory)) { dialogs.Error("The output folder does not exist yet."); return; }
             Process.Start(new ProcessStartInfo(directory) { UseShellExecute = true });
         }
         catch (Exception error) { dialogs.Error(error.Message); }
@@ -993,6 +1044,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
                 AppendOperationReport(lines[^1]);
             }
             ArtworkReport = $"Completed: {succeeded} extracted, {failed} failed, {skipped} skipped\nOutput: {outputRoot}\n\n" + string.Join('\n', lines);
+            if (succeeded + skipped > 0) SetLastOutputFolder(outputRoot);
             UpdateOperationProgress(1, $"Artwork extraction completed: {succeeded} extracted, {failed} failed, {skipped} skipped");
         });
     }
@@ -1167,6 +1219,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
                 $"Final: {FormatBytes(outputBytes)}\n" +
                 $"Saved: {FormatBytes(savings.SavedBytes)} ({savings.ReductionPercent:0.0}%)\n\n" +
                 string.Join('\n', reportLines);
+            if (succeeded > 0) SetLastOutputFolder(preparation.OutputRoot);
             UpdateOperationProgress(1, $"Compression completed: {succeeded} succeeded, {failed} failed, {skippedCount} skipped");
         });
     }
@@ -1397,7 +1450,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     {
         try
         {
-            Theme = Theme.Equals("Oled", StringComparison.OrdinalIgnoreCase) ? "White" : "Oled";
+            Theme = ThemeService.Next(Theme);
             ThemeService.Apply(Theme);
             await settingsStore.SaveAsync(new AppSettings(Theme, OutputFolder));
         }
@@ -1412,7 +1465,38 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         activeOperationCancellation?.Cancel();
         remixAnalysisCancellation?.Cancel();
         remixAnalysisCancellation?.Dispose();
+        playheadTimer?.Stop();
         previewPlayer.Dispose();
         remix?.CleanupTemporaryFiles();
+    }
+
+    private void StartPlayhead(bool remixWaveform, double start, double length, double rate)
+    {
+        StopPlayhead();
+        playheadOnRemix = remixWaveform; playheadStart = start; playheadLength = length; playheadRate = rate;
+        if (playheadTimer is null)
+        {
+            playheadTimer = new DispatcherTimer(DispatcherPriority.Render) { Interval = TimeSpan.FromMilliseconds(33) };
+            playheadTimer.Tick += (_, _) => TickPlayhead();
+        }
+        playheadClock.Restart();
+        playheadTimer.Start();
+        TickPlayhead();
+    }
+
+    // ponytail: wall-clock estimate because PlaySound reports no position; use a real audio API if drift becomes visible.
+    private void TickPlayhead()
+    {
+        var travelled = playheadClock.Elapsed.TotalSeconds * playheadRate;
+        if (travelled >= playheadLength) { StopPlayhead(); return; }
+        if (playheadOnRemix) RemixPlayheadSeconds = playheadStart + travelled; else CutPlayheadSeconds = playheadStart + travelled;
+    }
+
+    private void StopPlayhead()
+    {
+        playheadTimer?.Stop();
+        playheadClock.Reset();
+        CutPlayheadSeconds = double.NaN;
+        RemixPlayheadSeconds = double.NaN;
     }
 }

@@ -10,12 +10,19 @@ public partial class MainWindow : Window
 
     private void OnDragOver(object sender, DragEventArgs e)
     {
-        e.Effects = e.Data.GetDataPresent(DataFormats.FileDrop) ? DragDropEffects.Copy : DragDropEffects.None;
+        var accepted = e.Data.GetDataPresent(DataFormats.FileDrop);
+        e.Effects = accepted ? DragDropEffects.Copy : DragDropEffects.None;
+        // DragOver keeps firing while the pointer is inside, so it re-shows the overlay right after a child's DragLeave.
+        var canLoad = accepted && DataContext is MainViewModel { IsToolWorkspace: true, IsWorkspaceEnabled: true };
+        DropOverlay.Visibility = canLoad ? Visibility.Visible : Visibility.Collapsed;
         e.Handled = true;
     }
 
+    private void OnDragLeave(object sender, DragEventArgs e) => DropOverlay.Visibility = Visibility.Collapsed;
+
     private async void OnDrop(object sender, DragEventArgs e)
     {
+        DropOverlay.Visibility = Visibility.Collapsed;
         if (DataContext is MainViewModel viewModel && e.Data.GetData(DataFormats.FileDrop) is string[] paths)
         {
             await viewModel.AcceptDropAsync(paths);

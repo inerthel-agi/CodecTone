@@ -1,5 +1,34 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Added a Glass theme: translucent layers with bright top edges and larger corner radii over the Windows 11 acrylic backdrop. Without the backdrop (Windows 10, Windows 11 before 22H2, or transparency effects off), it falls back to an opaque tinted background. The theme button now cycles OLED, White, and Glass, and shows the current theme.
+
+### Changed
+
+- Replaced the header and wrapping tab row with a sidebar that has icons, the theme switch, and the local-only notice.
+- Added page titles, drop zones for empty sources, and file cards for loaded sources. Convert and Compress no longer accept a typed source path.
+- Added a window-wide drop overlay while dragging files.
+- Restyled controls: switches for options, segmented format pickers, themed slider, text boxes and tooltips, and a visible keyboard focus ring.
+- Switched interface labels from all caps to sentence case.
+- The bottom bar shows progress only while busy, replaces the main action with Cancel, and offers Open folder after a successful operation.
+- Moved Save report next to each report.
+- Darkened the WHITE accent to `#007A5E` so accent text and white-on-accent text reach a 4.5:1 contrast ratio.
+- Selected items, chips, info boxes and the scrollbar use neutral tones. The accent stays on small signals: switches, slider fills, the active-item bar, status text and icons.
+- Added transitions: pages fade in, hover and selection states fade, buttons scale when pressed, switches slide, and the report disclosure chevron turns. They become instant when Windows animation effects are off.
+- The waveform shows a time ruler, dims the area outside the selection, labels both handles, and shows a playhead during Cut and Remix previews. Arrow keys nudge the selected handle (Shift: 1 s), `[` and `]` pick a handle, Home and End jump to the bounds.
+- Cut and Remix playback controls sit under the waveform. The bottom bar keeps only the status and the main action.
+- Remix presets show as cards with a one-line description. Intensity and the Export/Metadata inspector use segmented controls. Each effect parameter has a slider bounded by the same limits the rack validator enforces.
+- Reports show one row per file with a status icon and shortened paths. The full text stays under Raw report and in Save report.
+- The About page and the GitHub button now point to `https://github.com/inerthel-agi` and credit inerthel. The single-instance mutex and activation event names changed accordingly, so a 1.2.0 instance and this build can run side by side.
+
+### Fixed
+
+- The active tab and other accent-filled controls showed light text on the bright OLED accent (about 1.7:1 contrast).
+- Sidebar buttons and remix rack buttons expose accessible names.
+
 ## 1.2.0 - 2026-09-05
 
 ### Added

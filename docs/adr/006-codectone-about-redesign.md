@@ -19,8 +19,8 @@ workspace that explains its local FFmpeg pipeline and privacy model.
 - Use a restrained editorial layout: strong typography, flat surfaces, rules,
   generous spacing, and the existing green accent only for hierarchy.
 - Show the assembly version dynamically, supported tasks, local pipeline,
-  privacy statement, runtime technologies, and Stealthy Labs attribution.
-- Open `https://github.com/stealthsrc` only from an explicit button through the
+  privacy statement, runtime technologies, and inerthel attribution.
+- Open `https://github.com/inerthel-agi` only from an explicit button through the
   Windows default browser. Do not embed remote content or a WebView.
 - Show the MIT project license confirmed for public repository publication.
 

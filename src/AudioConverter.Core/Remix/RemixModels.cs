@@ -62,7 +62,7 @@ public sealed record AudioAnalysis(
     int SampleRate,
     int Channels);
 
-public sealed record RemixPresetDefinition(RemixPreset Preset, string Name, RemixPresetCategory Category);
+public sealed record RemixPresetDefinition(RemixPreset Preset, string Name, RemixPresetCategory Category, string Description = "");
 
 public sealed record AdaptiveRemixRack(
     IReadOnlyList<RemixEffect> Rack,

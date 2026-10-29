@@ -6,6 +6,17 @@ namespace AudioConverter.Core.Tests;
 public sealed class RemixRackValidatorTests
 {
     [TestMethod]
+    public void Bounds_DriveValidationAndCapFadesBySource()
+    {
+        Assert.AreEqual((1d, 16d), RemixRackValidator.Bounds(RemixEffectKind.Distortion, 2, 120));
+        Assert.AreEqual((0d, 12d), RemixRackValidator.Bounds(RemixEffectKind.FadeIn, 0, 12));
+        Assert.ThrowsException<ArgumentOutOfRangeException>(() => RemixRackValidator.Bounds(RemixEffectKind.Volume, 1, 120));
+
+        var error = Assert.ThrowsException<ArgumentException>(() => RemixRackValidator.Validate([new BassEffect(19, 90)], 120));
+        Assert.AreEqual("Bass gain must be between -12 and 18.", error.Message);
+    }
+
+    [TestMethod]
     public void Validate_RejectsDuplicateTempoEffect()
     {
         RemixEffect[] rack = [new TempoPitchEffect(0.9), new TempoPitchEffect(1.1)];

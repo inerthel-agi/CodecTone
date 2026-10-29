@@ -32,7 +32,25 @@ public sealed class RemixEffectViewModel : ObservableObject
     public double First { get => first; set { if (Set(ref first, value)) changed(); } }
     public double Second { get => second; set { if (Set(ref second, value)) changed(); } }
     public double Third { get => third; set { if (Set(ref third, value)) changed(); } }
-    public bool HasSecond => Kind is RemixEffectKind.Bass or RemixEffectKind.Equalizer or RemixEffectKind.Reverb or RemixEffectKind.Echo or RemixEffectKind.Compressor or RemixEffectKind.Distortion or RemixEffectKind.BitCrusher;
+    // Slider ranges come from the validator; fades use the 30 s cap because the source length is checked on export.
+    public double FirstMinimum => Range(0).Minimum;
+    public double FirstMaximum => Range(0).Maximum;
+    public double FirstStep => Step(0);
+    public double SecondMinimum => HasSecond ? Range(1).Minimum : 0;
+    public double SecondMaximum => HasSecond ? Range(1).Maximum : 1;
+    public double SecondStep => HasSecond ? Step(1) : 1;
+    public double ThirdMinimum => HasThird ? Range(2).Minimum : 0;
+    public double ThirdMaximum => HasThird ? Range(2).Maximum : 1;
+    public double ThirdStep => HasThird ? Step(2) : 1;
+    private (double Minimum, double Maximum) Range(int parameter) => RemixRackValidator.Bounds(Kind, parameter, double.PositiveInfinity);
+    private double Step(int parameter)
+    {
+        if (Kind == RemixEffectKind.Distortion && parameter == 2) return 1;
+        var (minimum, maximum) = Range(parameter);
+        var span = maximum - minimum;
+        return span <= 2 ? 0.01 : span <= 50 ? 0.5 : span <= 500 ? 1 : 10;
+    }
+    public bool HasSecond =>Kind is RemixEffectKind.Bass or RemixEffectKind.Equalizer or RemixEffectKind.Reverb or RemixEffectKind.Echo or RemixEffectKind.Compressor or RemixEffectKind.Distortion or RemixEffectKind.BitCrusher;
     public bool HasThird => Kind is RemixEffectKind.Equalizer or RemixEffectKind.Reverb or RemixEffectKind.Echo or RemixEffectKind.Compressor or RemixEffectKind.Distortion or RemixEffectKind.BitCrusher;
     public string FirstLabel => Kind switch
     {

@@ -2,7 +2,7 @@
 
 CodecTone converts, compresses, cuts, remixes, and extracts embedded album artwork locally on Windows with FFmpeg. It provides a WPF interface and a command-line executable. Media processing does not use cloud storage or telemetry.
 
-Repository: [github.com/stealthsrc/CodecTone](https://github.com/stealthsrc/CodecTone)
+Repository: [github.com/inerthel-agi/CodecTone](https://github.com/inerthel-agi/CodecTone)
 
 ## Requirements
 
@@ -18,7 +18,7 @@ CodecTone can install FFmpeg 9.0.1 in `%LOCALAPPDATA%\AudioConverter\runtime\ffm
 Clone and build the project:
 
 ```console
-git clone https://github.com/stealthsrc/CodecTone.git
+git clone https://github.com/inerthel-agi/CodecTone.git
 cd CodecTone
 build_executable.bat
 ```
@@ -35,18 +35,20 @@ release\cli\CodecTone.Cli.exe
 
 ## Usage
 
-The GUI contains five tool workspaces and an About page:
+The GUI has a sidebar with five tool workspaces, an About page, and a theme button that cycles OLED, White, and Glass. Glass shows a live acrylic backdrop on Windows 11 22H2 or newer when **Transparency effects** is on; otherwise it uses an opaque tinted background.
 
-- **CONVERT** processes one file or a non-recursive folder batch.
-- **CUT AUDIO** selects a waveform range, applies fades, previews it, and exports it.
-- **COMPRESS AUDIO** uses quality profiles or a total-size budget and scans folders recursively.
-- **EXTRACT ARTWORK** extracts one embedded front cover per album as the original image, PNG, JPEG, or WebP.
-- **REMIX AUDIO** applies 33 categorized presets or an ordered effect rack to one song and edits its metadata. The EARRAPE preset displays an explicit hearing warning.
-- **ABOUT** explains the local processing pipeline and links to the maintainer profile.
+- **Convert** processes one file or a non-recursive folder batch.
+- **Cut** selects a waveform range, applies fades, previews it, and exports it.
+- **Compress** uses quality profiles or a total-size budget and scans folders recursively.
+- **Artwork** extracts one embedded front cover per album as the original image, PNG, JPEG, or WebP.
+- **Remix** applies 33 categorized presets or an ordered effect rack to one song and edits its metadata. The EARRAPE preset displays an explicit hearing warning.
+- **About** explains the local processing pipeline and links to the maintainer profile.
 
-In Remix, use PREVIEW ORIGINAL and PREVIEW REMIX to compare the same source interval. Preview volume defaults to 25%, applies on the next playback, and does not affect exports.
+Drop a file or folder anywhere in the window, or use **Choose file** and **Choose folder**. After an operation succeeds, **Open folder** in the bottom bar opens its output folder. While an operation runs, **Cancel** replaces the main action button.
 
-In Extract Artwork, analyze a folder, select an album, then choose PREVIEW COVER. SAVE REPORT exports the current report to text. About provides OPEN LOCAL DIAGNOSTICS; the rotating log stays local and can include file paths.
+In Cut and Remix, the playback controls sit under the waveform. Click the waveform to focus it, then use the arrow keys to nudge the selected handle (Shift: 1 s); `[` and `]` pick the handle. In Remix, play **Original** and **Remix** to compare the same source interval. Preview volume defaults to 25%, applies on the next playback, and does not affect exports. Transitions follow the Windows **Animation effects** setting.
+
+In Artwork, analyze a folder, select an album, then choose **Preview cover**. **Save report** exports the current report to text. About provides **Open local diagnostics**; the rotating log stays local and can include file paths.
 
 Supported source formats are MP3, FLAC, WAV, OGG, AAC, and M4A. Compression destinations exclude WAV because it generally does not reduce file size.
 

@@ -16,7 +16,7 @@
     <RootNamespace>AudioConverter.Desktop</RootNamespace>
     <Version>1.2.0</Version>
     <Product>CodecTone</Product>
-    <Company>Stealthy Labs</Company>
+    <Company>inerthel</Company>
   </PropertyGroup>
 
   <ItemGroup>

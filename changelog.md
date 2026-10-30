@@ -31,12 +31,19 @@
 - Reports show one row per file with a status icon and shortened paths. The full text stays under Raw report and in Save report.
 - Split the main view model into one view model per tool on top of a shared `WorkspaceHost`.
 - The About page lists all nine tools.
-- The About page and the GitHub button now point to `https://github.com/inerthel-agi` and credit inerthel. The single-instance mutex and activation event names changed accordingly, so a 1.2.0 instance and this build can run side by side.
+- The About page credits inerthel. The single-instance mutex and activation event names changed accordingly, so a 1.2.1 instance and this build can run side by side.
 
 ### Fixed
 
 - The active tab and other accent-filled controls showed light text on the bright OLED accent (about 1.7:1 contrast).
 - Sidebar buttons and remix rack buttons expose accessible names.
+
+## 1.2.1 - 2026-09-28
+
+### Fixed
+
+- The About window's VIEW ON GITHUB button now opens github.com/inerthel-agi.
+- README repository and clone links now point to github.com/inerthel-agi/CodecTone.
 
 ## 1.2.0 - 2026-09-05
 

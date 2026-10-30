@@ -194,7 +194,7 @@ public sealed class NavItem(string label, string glyphKey, object page, Action<o
 
 public sealed class AboutViewModel(WorkspaceHost host)
 {
-    public string ProductVersion => typeof(AboutViewModel).Assembly.GetName().Version?.ToString(3) ?? "1.2.0";
+    public string ProductVersion => typeof(AboutViewModel).Assembly.GetName().Version?.ToString(3) ?? "1.2.1";
     public RelayCommand OpenGitHubCommand { get; } = new(() =>
     {
         try { ExternalLinkService.OpenGitHubProfile(); }

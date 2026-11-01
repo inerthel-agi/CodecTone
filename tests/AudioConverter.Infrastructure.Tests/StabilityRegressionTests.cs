@@ -103,7 +103,9 @@ public sealed class StabilityRegressionTests
     [TestCategory("RequiresFfmpeg")]
     public async Task CancelledRealEncoder_DoesNotPublishOrLeaveStagedFile()
     {
-        var tools = FfmpegLocator.Find();
+        FfmpegTools tools;
+        try { tools = FfmpegLocator.Find(); }
+        catch (FfmpegDependencyException) { Assert.Inconclusive("FFmpeg is not available for integration testing."); return; }
         var root = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
         using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(300));

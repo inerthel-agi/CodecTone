@@ -17,7 +17,9 @@ public sealed class StreamingWaveformTests
     [TestCategory("RequiresFfmpeg")]
     public async Task Waveform_PreservesHighFrequencyAndAntiphaseChannels()
     {
-        var tools = FfmpegLocator.Find();
+        FfmpegTools tools;
+        try { tools = FfmpegLocator.Find(); }
+        catch (FfmpegDependencyException) { Assert.Inconclusive("FFmpeg is not available for integration testing."); return; }
         var path = Path.Combine(Path.GetTempPath(), $"waveform-{Guid.NewGuid():N}.wav");
         try
         {

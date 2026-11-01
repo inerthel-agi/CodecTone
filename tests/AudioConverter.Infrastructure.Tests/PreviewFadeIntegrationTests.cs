@@ -11,7 +11,9 @@ public sealed class PreviewFadeIntegrationTests
     [TestCategory("RequiresFfmpeg")]
     public async Task PreviewFades_MatchFullExportAtBeginningMiddleAndEnd()
     {
-        var tools = FfmpegLocator.Find();
+        FfmpegTools tools;
+        try { tools = FfmpegLocator.Find(); }
+        catch (FfmpegDependencyException) { Assert.Inconclusive("FFmpeg is not available for integration testing."); return; }
         var runner = new FfmpegProcessRunner();
         var root = Path.Combine(Path.GetTempPath(), $"fade-{Guid.NewGuid():N}");
         Directory.CreateDirectory(root);
